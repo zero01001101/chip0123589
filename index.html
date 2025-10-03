@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chíp học English</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS tùy chỉnh cho hiệu ứng và font chữ */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .font-pacifico {
+            font-family: 'Pacifico', cursive;
+        }
+
+        /* Animation cho trái tim */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .heart-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Trái tim SVG liền mạch */
+        .svg-heart {
+            filter: drop-shadow(0 10px 8px rgba(236, 72, 153, 0.4)) drop-shadow(0 4px 3px rgba(236, 72, 153, 0.5));
+        }
+
+    </style>
+</head>
+<body class="bg-gradient-to-br from-rose-100 to-pink-200 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Container chính -->
+    <main class="w-full max-w-lg mx-auto text-center">
+        
+        <!-- Trái tim SVG -->
+        <div class="h-auto flex justify-center items-center mb-4 heart-animation">
+             <svg class="w-72 h-72 sm:w-80 sm:h-80 svg-heart" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#f472b6;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <path fill="url(#heartGradient)" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+        </div>
+
+        <!-- Tiêu đề -->
+        <h1 class="font-pacifico text-5xl md:text-6xl text-pink-600 mb-8 drop-shadow-lg">
+            Chíp học English
+        </h1>
+
+        <!-- Các nút bấm -->
+        <div class="space-y-6">
+            <!-- Container cho 2 nút trái tim nằm ngang -->
+            <div class="flex flex-col sm:flex-row items-center justify-center sm:space-x-6 space-y-6 sm:space-y-0">
+                 <!-- Nút Vocabulary -->
+                <a href="https://docs.google.com/document/d/1InPRi6y2rDL83vMl8d9Glhjjj-Tq837l7-Zz0HYyOYM/edit?usp=sharing" target="_blank" rel="noopener noreferrer" 
+                   class="group transition-transform transform hover:scale-105">
+                    <svg viewBox="0 0 24 24" class="w-40 h-40 drop-shadow-lg">
+                        <path class="fill-pink-500 group-hover:fill-pink-600 transition-colors" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        <text x="12" y="13" text-anchor="middle" dominant-baseline="middle" font-size="2.8" font-family="Pacifico" class="fill-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">Vocabulary</text>
+                    </svg>
+                </a>
+                
+                <!-- Nút Exercises -->
+                <a href="https://g.co/gemini/share/3840e6f487bd" target="_blank" rel="noopener noreferrer" 
+                   class="group transition-transform transform hover:scale-105">
+                    <svg viewBox="0 0 24 24" class="w-40 h-40 drop-shadow-lg">
+                        <path class="fill-pink-500 group-hover:fill-pink-600 transition-colors" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        <text x="12" y="13" text-anchor="middle" dominant-baseline="middle" font-size="3.2" font-family="Pacifico" class="fill-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">Exercises</text>
+                    </svg>
+                </a>
+            </div>
+
+            <!-- Tiktok Info -->
+            <div class="pt-8">
+                <p class="font-pacifico text-2xl text-pink-600 drop-shadow-md">Tiktok: @chip012358</p>
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>
+
