@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng Dụng Học Từ Vựng</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Mammoth.js for reading .docx -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Mali:wght@600&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .mali-font {
+            font-family: 'Mali', cursive;
+        }
+        .hidden {
+            display: none;
+        }
+
+        /* Login Page Ripple Effect */
+        #loginPage button {
+            position: relative;
+            overflow: hidden;
+        }
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-effect 0.6s linear;
+        }
+        @keyframes ripple-effect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Admin Page Drag & Drop Styles */
+        .drag-over {
+            @apply border-pink-400 bg-pink-100;
+        }
+
+        /* Quiz Page Animations */
+        .heartbeat { animation: heartbeat 1.5s ease-in-out infinite both; }
+        @keyframes heartbeat {
+            from { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            to { transform: scale(1); }
+        }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .popup-animate { animation: zoomIn 0.3s ease-out; }
+        @keyframes zoomIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-pink-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- =================================================================
+         LOGIN PAGE
+    ================================================================== -->
+    <div id="loginPage" class="w-full max-w-sm">
+        <form id="loginForm" class="bg-white shadow-lg rounded-xl px-8 pt-6 pb-8 mb-4">
+            <h1 class="text-2xl font-bold text-center text-pink-600 mb-6">Đăng Nhập</h1>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="username">Tên người dùng</label>
+                <input class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-pink-500" id="username" type="text">
+            </div>
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="password">Mật khẩu</label>
+                <input class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline focus:border-pink-500" id="password" type="password">
+            </div>
+            <div class="flex items-center justify-center">
+                <button class="bg-pink-500 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline w-full transition duration-300" type="submit">Đăng Nhập</button>
+            </div>
+        </form>
+        <!-- Login Popup -->
+        <div id="loginPopupOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div class="bg-pink-500 text-white p-6 rounded-lg shadow-xl text-center max-w-sm w-full">
+                <p id="loginPopupMessage" class="mb-4 text-lg"></p>
+                <button id="closeLoginPopupButton" class="bg-pink-700 hover:bg-pink-800 text-white font-bold py-2 px-6 rounded-lg">Thử lại</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================
+         ADMIN PAGE (Read File & Generate Quiz)
+    ================================================================== -->
+    <div id="adminPage" class="hidden container mx-auto p-6 bg-white rounded-2xl shadow-xl max-w-4xl">
+        <header class="text-center mb-6 flex justify-between items-center">
+            <div></div> <!-- Spacer -->
+            <h1 class="text-4xl font-bold text-pink-500">Tạo Đề Trắc Nghiệm</h1>
+            <button id="adminLogoutBtn" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Đăng xuất</button>
+        </header>
+        <main>
+            <div id="drop-zone" class="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-300 text-center transition-colors duration-200">
+                <p class="text-gray-500 mb-4">Kéo và thả file Word (.docx) vào đây, hoặc</p>
+                <label for="file-input" class="bg-pink-400 text-white font-bold py-2 px-4 rounded-xl hover:bg-pink-500 transition-colors cursor-pointer">Chọn File</label>
+                <input type="file" id="file-input" class="hidden" accept=".docx" multiple>
+                <div id="file-chosen" class="mt-4 text-gray-600">Chưa có file nào được chọn</div>
+            </div>
+            <div id="actions-container" class="text-center my-6 space-x-4">
+                <button id="generate-btn" class="text-lg px-8 py-3 bg-pink-400 text-white font-bold rounded-xl hover:bg-pink-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Thêm Từ Mới</button>
+                <button id="undo-btn" class="text-lg px-8 py-3 bg-gray-500 text-white font-bold rounded-xl hover:bg-gray-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Hoàn tác</button>
+            </div>
+            <div id="status" class="text-center text-pink-600 font-medium h-5 mb-4"></div>
+        </main>
+         <!-- Admin Popup -->
+        <div id="adminPopupOverlay" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4">
+            <div class="popup-animate bg-white p-8 rounded-2xl shadow-lg text-center max-w-sm">
+                <p id="adminPopupMessage" class="mb-6 text-lg text-gray-700"></p>
+                <button id="adminPopupCloseBtn" class="bg-pink-400 text-white font-bold py-2 px-6 rounded-xl hover:bg-pink-500">Đã hiểu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================
+         QUIZ PAGE (Do Exercises)
+    ================================================================== -->
+    <div id="quizPage" class="hidden w-full max-w-2xl mx-auto">
+        <!-- Start Screen -->
+        <div id="startScreen" class="text-center bg-pink-100 p-8 rounded-2xl shadow-lg">
+             <div class="text-right mb-4">
+                 <button id="quizLogoutBtn" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors text-sm">Đăng xuất</button>
+            </div>
+            <h1 class="text-4xl font-bold mb-2 text-pink-700 mali-font">Trắc nghiệm Từ vựng</h1>
+            <p id="currentDate" class="text-gray-500 mb-4"></p>
+            <p class="text-gray-600 mb-8">Số lần làm bài hôm nay: <span id="playCount" class="font-bold text-pink-600">0</span></p>
+            <button id="startBtn" class="bg-pink-500 text-white font-bold py-3 px-8 rounded-full hover:bg-pink-600 transition-transform transform hover:scale-105 text-lg">Bắt đầu!</button>
+        </div>
+        <!-- Quiz Screen -->
+        <div id="quizScreenContent" class="hidden bg-pink-100 p-6 sm:p-8 rounded-2xl shadow-lg">
+            <div class="flex justify-between items-center mb-6">
+                <div id="progress" class="text-lg font-bold text-pink-700">Câu 1/10</div>
+                <div id="score" class="text-lg font-bold text-pink-700">Điểm: 0</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl text-center mb-6">
+                <h2 id="question" class="text-3xl sm:text-4xl font-bold text-gray-800"></h2>
+                <button id="speakBtn" class="mt-2 text-pink-500 hover:text-pink-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.383-.217zM14.657 2.929a1 1 0 011.414 0A9 9 0 0119 10a9 9 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7 7 0 0017 10a7 7 0 00-2.343-5.657 1 1 0 010-1.414zm-2.828 2.828a1 1 0 011.414 0A5 5 0 0115 10a5 5 0 01-1.757 3.536 1 1 0 11-1.414-1.414A3 3 0 0013 10a3 3 0 00-.879-2.121 1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                </button>
+            </div>
+            <div id="answers" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+        </div>
+        <!-- Quiz Popups Container -->
+        <div id="quizPopupContainer" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+            <!-- Welcome -->
+            <div id="welcomePopup" class="popup-animate bg-pink-100 p-8 rounded-2xl shadow-lg text-center w-full max-w-sm hidden">
+                <div class="w-24 h-24 mx-auto mb-4 text-pink-300 flex items-center justify-center">
+                     <svg class="w-full h-full heartbeat" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-pink-700 mb-4 mali-font">Chíp đáng yêu học vui vẻ!</h3>
+                <p class="text-gray-600 mb-6">Yêu chíp nhiều! &lt;3</p>
+                <button id="closeWelcomeBtn" class="bg-pink-500 text-white font-bold py-2 px-8 rounded-full hover:bg-pink-600">Học thôi nào!</button>
+            </div>
+            <!-- Wrong Answer -->
+            <div id="wrongPopup" class="popup-animate bg-white p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm hidden">
+                <h3 class="text-2xl font-bold text-red-500 mb-4 mali-font">Sai rồi!</h3>
+                <p class="text-gray-700 mb-4">Đáp án đúng là: <span id="correctAnswerText" class="font-bold text-green-600"></span></p>
+                <button id="closeWrongPopup" class="bg-pink-500 text-white font-bold px-6 py-2 rounded-lg">Câu tiếp theo</button>
+            </div>
+            <!-- End Game -->
+            <div id="endPopup" class="popup-animate p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm hidden">
+                 <div id="heartContainer" class="hidden relative w-24 h-24 mx-auto mb-4"><div class="heartbeat absolute text-8xl text-pink-400">❤️</div></div>
+                 <h3 id="endTitle" class="text-3xl font-bold mb-2 mali-font"></h3>
+                 <p id="endMessage" class="text-lg text-gray-200 mb-6"></p>
+                 <div class="flex flex-col sm:flex-row justify-center gap-4">
+                     <button id="replayBtn" class="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600">Làm lại</button>
+                     <button id="homeBtn" class="bg-pink-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-pink-600">Trang chủ</button>
+                 </div>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+    // =================================================================
+    //                  MAIN APPLICATION CONTROLLER
+    // =================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+        const loginPage = document.getElementById('loginPage');
+        const adminPage = document.getElementById('adminPage');
+        const quizPage = document.getElementById('quizPage');
+
+        function showPage(pageId) {
+            loginPage.classList.add('hidden');
+            adminPage.classList.add('hidden');
+            quizPage.classList.add('hidden');
+            
+            const pageToShow = document.getElementById(pageId);
+            if(pageToShow) {
+                pageToShow.classList.remove('hidden');
+            }
+        }
+        
+        initializeLogin(showPage);
+        initializeAdmin(showPage);
+        initializeQuiz(showPage);
+
+        showPage('loginPage');
+    });
+
+    // =================================================================
+    //                     LOGIN PAGE LOGIC
+    // =================================================================
+    function initializeLogin(showPage) {
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const popupOverlay = document.getElementById('loginPopupOverlay');
+        const popupMessage = document.getElementById('loginPopupMessage');
+        const closePopupButton = document.getElementById('closeLoginPopupButton');
+
+        function showLoginPopup(message) {
+            popupMessage.textContent = message;
+            popupOverlay.classList.remove('hidden');
+        }
+
+        closePopupButton.addEventListener('click', () => popupOverlay.classList.add('hidden'));
+
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+
+            if (username === '' || password === '') {
+                showLoginPopup('Vui lòng nhập đầy đủ thông tin!');
+            } else if (username === 'admin' && password === 'admin') {
+                showPage('adminPage');
+                loginForm.reset();
+            } else if (username === 'chip230905' && password === 'chip230905') {
+                showPage('quizPage');
+                loginForm.reset();
+                document.getElementById('quizPopupContainer').classList.remove('hidden');
+                document.getElementById('welcomePopup').classList.remove('hidden');
+            } else {
+                showLoginPopup('Sai tài khoản hoặc mật khẩu!');
+            }
+        });
+        
+        document.querySelectorAll('#loginPage button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const oldRipple = this.querySelector('.ripple');
+                if(oldRipple) oldRipple.remove();
+                const rect = e.target.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const ripple = document.createElement('span');
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    }
+
+    // =================================================================
+    //                  ADMIN PAGE LOGIC
+    // =================================================================
+    function initializeAdmin(showPage) {
+        const fileInput = document.getElementById('file-input');
+        const fileChosen = document.getElementById('file-chosen');
+        const generateBtn = document.getElementById('generate-btn');
+        const undoBtn = document.getElementById('undo-btn');
+        const statusDiv = document.getElementById('status');
+        const dropZone = document.getElementById('drop-zone');
+        const popupOverlay = document.getElementById('adminPopupOverlay');
+        const popupMessage = document.getElementById('adminPopupMessage');
+        const popupCloseBtn = document.getElementById('adminPopupCloseBtn');
+        const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+        
+        // Function to update the state of the undo button
+        function updateUndoButtonState() {
+            const historyStr = localStorage.getItem('vocabularyHistory');
+            const history = historyStr ? JSON.parse(historyStr) : [];
+            undoBtn.disabled = history.length === 0;
+        }
+
+        // Initial state check when admin page loads
+        updateUndoButtonState();
+
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileChosen.textContent = `Đã chọn ${fileInput.files.length} file.`;
+                generateBtn.disabled = false;
+                statusDiv.textContent = '';
+            } else {
+                fileChosen.textContent = 'Chưa có file nào được chọn';
+                generateBtn.disabled = true;
+            }
+        });
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, e => e.preventDefault() || e.stopPropagation());
+        });
+        ['dragenter', 'dragover'].forEach(eventName => dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over')));
+        ['dragleave', 'drop'].forEach(eventName => dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over')));
+        dropZone.addEventListener('drop', (e) => {
+            fileInput.files = e.dataTransfer.files;
+            fileInput.dispatchEvent(new Event('change'));
+        });
+        
+        adminLogoutBtn.addEventListener('click', () => showPage('loginPage'));
+
+        generateBtn.addEventListener('click', () => {
+            if (fileInput.files.length === 0) {
+                showAdminPopup('Vui lòng chọn ít nhất một file Word!');
+                return;
+            }
+            handleFiles(fileInput.files);
+        });
+        
+        undoBtn.addEventListener('click', () => {
+            const historyStr = localStorage.getItem('vocabularyHistory');
+            let history = historyStr ? JSON.parse(historyStr) : [];
+
+            if (history.length > 0) {
+                const lastState = history.pop();
+                localStorage.setItem('combinedVocabulary', lastState.combined);
+                localStorage.setItem('latestVocabulary', lastState.latest);
+                localStorage.setItem('vocabularyHistory', JSON.stringify(history));
+
+                const restoredCombined = JSON.parse(lastState.combined);
+                showAdminPopup(`Hoàn tác thành công! Kho đề đã quay lại trạng thái với ${restoredCombined.length} từ.`);
+                updateUndoButtonState();
+            } else {
+                showAdminPopup("Không có gì để hoàn tác.");
+            }
+        });
+
+
+        function handleFiles(files) {
+            statusDiv.textContent = 'Đang xử lý file...';
+            let newWordsFromFile = [];
+            
+            const filePromises = Array.from(files).map(file => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = event => {
+                        mammoth.convertToHtml({ arrayBuffer: event.target.result })
+                            .then(result => resolve(result.value))
+                            .catch(reject);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsArrayBuffer(file);
+                });
+            });
+
+            Promise.all(filePromises)
+                .then(htmlResults => {
+                    const uniqueWordsInFile = new Set();
+                    htmlResults.forEach(html => {
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = html;
+                        const table = tempDiv.querySelector('table');
+                        if (table) {
+                            const rows = table.querySelectorAll('tr');
+                            for (let i = 1; i < rows.length; i++) {
+                                const cells = rows[i].querySelectorAll('td, th');
+                                if (cells.length >= 2) {
+                                    const eng = cells[0].innerText.trim();
+                                    const vie = cells[1].innerText.trim();
+                                    if (eng && vie && !uniqueWordsInFile.has(eng)) {
+                                        uniqueWordsInFile.add(eng);
+                                        newWordsFromFile.push({ en: eng, vi: vie });
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    const existingCombinedVocabStr = localStorage.getItem('combinedVocabulary');
+                    const existingLatestVocabStr = localStorage.getItem('latestVocabulary');
+                    
+                    const currentState = {
+                        combined: existingCombinedVocabStr || '[]',
+                        latest: existingLatestVocabStr || '[]'
+                    };
+                    const historyStr = localStorage.getItem('vocabularyHistory');
+                    let history = historyStr ? JSON.parse(historyStr) : [];
+                    history.push(currentState);
+                    localStorage.setItem('vocabularyHistory', JSON.stringify(history));
+
+                    let combinedVocab = existingCombinedVocabStr ? JSON.parse(existingCombinedVocabStr) : [];
+                    const existingWordsSet = new Set(combinedVocab.map(item => item.en));
+                    
+                    const trulyNewWords = newWordsFromFile.filter(word => !existingWordsSet.has(word.en));
+
+                    if (trulyNewWords.length === 0) {
+                        // Revert history push if no new words are added
+                        history.pop();
+                        localStorage.setItem('vocabularyHistory', JSON.stringify(history));
+                        throw new Error("Không có từ vựng mới nào trong file hoặc các từ này đã tồn tại.");
+                    }
+                    
+                    const updatedCombinedVocab = [...combinedVocab, ...trulyNewWords];
+                    localStorage.setItem('combinedVocabulary', JSON.stringify(updatedCombinedVocab));
+                    localStorage.setItem('latestVocabulary', JSON.stringify(trulyNewWords));
+                    
+                    statusDiv.textContent = '';
+                    showAdminPopup(`Thành công! Đã thêm ${trulyNewWords.length} từ vựng mới. Tổng số từ trong kho đề: ${updatedCombinedVocab.length}.`);
+                    fileInput.value = '';
+                    fileChosen.textContent = 'Chưa có file nào được chọn';
+                    generateBtn.disabled = true;
+                    updateUndoButtonState();
+                })
+                .catch(handleError);
+        }
+        
+        function showAdminPopup(message) {
+            popupMessage.textContent = message;
+            popupOverlay.classList.remove('hidden');
+        }
+        function hideAdminPopup() {
+            popupOverlay.classList.add('hidden');
+        }
+        function handleError(error) {
+            console.error(error);
+            showAdminPopup(`Lỗi: ${error.message}`);
+            statusDiv.textContent = ''; 
+        }
+        popupCloseBtn.addEventListener('click', hideAdminPopup);
+        popupOverlay.addEventListener('click', (e) => { if (e.target === popupOverlay) hideAdminPopup(); });
+    }
+
+    // =================================================================
+    //                     QUIZ PAGE LOGIC
+    // =================================================================
+    function initializeQuiz(showPage) {
+        const initialDefaultVocabularyList = [
+            { en: 'teacher', vi: 'giáo viên' }, { en: 'doctor', vi: 'bác sĩ' }, { en: 'nurse', vi: 'y tá' }, 
+            { en: 'engineer', vi: 'kỹ sư' }, { en: 'worker', vi: 'công nhân' }, { en: 'farmer', vi: 'nông dân' }, 
+            { en: 'driver', vi: 'tài xế' }, { en: 'student', vi: 'học sinh' }, { en: 'police officer', vi: 'cảnh sát' },
+            { en: 'singer', vi: 'ca sĩ' }
+        ];
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let scoreCount = 0;
+        const synth = window.speechSynthesis;
+
+        const startScreen = document.getElementById('startScreen');
+        const quizScreenContent = document.getElementById('quizScreenContent');
+        const startBtn = document.getElementById('startBtn');
+        const currentDateEl = document.getElementById('currentDate');
+        const playCountEl = document.getElementById('playCount');
+        const quizLogoutBtn = document.getElementById('quizLogoutBtn');
+        
+        const progress = document.getElementById('progress');
+        const score = document.getElementById('score');
+        const questionEl = document.getElementById('question');
+        const speakBtn = document.getElementById('speakBtn');
+        const answersEl = document.getElementById('answers');
+
+        const popupContainer = document.getElementById('quizPopupContainer');
+        const welcomePopup = document.getElementById('welcomePopup');
+        const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
+        
+        const wrongPopup = document.getElementById('wrongPopup');
+        const correctAnswerText = document.getElementById('correctAnswerText');
+        const closeWrongPopup = document.getElementById('closeWrongPopup');
+
+        const endPopup = document.getElementById('endPopup');
+        const replayBtn = document.getElementById('replayBtn');
+        const homeBtn = document.getElementById('homeBtn');
+
+        function getTodayString() {
+            const today = new Date();
+            return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+        }
+
+        function updatePlayCount() {
+            const todayKey = `quizPlayCount_${getTodayString()}`;
+            const count = localStorage.getItem(todayKey) || 0;
+            playCountEl.textContent = count;
+            return parseInt(count);
+        }
+
+        function incrementPlayCount() {
+            let count = updatePlayCount();
+            const todayKey = `quizPlayCount_${getTodayString()}`;
+            localStorage.setItem(todayKey, count + 1);
+            updatePlayCount();
+        }
+        
+        const today = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        currentDateEl.textContent = today.toLocaleDateString('vi-VN', options);
+        updatePlayCount();
+
+        function speak(text) {
+            if (synth.speaking) synth.cancel();
+            const utterThis = new SpeechSynthesisUtterance(text);
+            utterThis.lang = 'en-US';
+            synth.speak(utterThis);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        function startGame() {
+            startScreen.classList.add('hidden');
+            quizScreenContent.classList.remove('hidden');
+            
+            scoreCount = 0;
+            currentQuestionIndex = 0;
+            
+            // --- NEW QUIZ GENERATION LOGIC ---
+            const latestVocab = JSON.parse(localStorage.getItem('latestVocabulary')) || [];
+            const combinedVocab = JSON.parse(localStorage.getItem('combinedVocabulary')) || initialDefaultVocabularyList;
+            
+            const latestWordsSet = new Set(latestVocab.map(item => item.en));
+            const oldVocab = combinedVocab.filter(item => !latestWordsSet.has(item.en));
+
+            const newQuestions = shuffleArray([...latestVocab]).slice(0, 7);
+            const oldQuestions = shuffleArray([...oldVocab]).slice(0, 3);
+            
+            currentQuestions = shuffleArray([...newQuestions, ...oldQuestions]);
+            
+            if (currentQuestions.length < 4) {
+                alert("Bộ đề cần ít nhất 4 từ vựng để bắt đầu. Vui lòng yêu cầu admin tạo bộ đề mới.");
+                goToHome();
+                return;
+            }
+
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            if (currentQuestions.length === 0) return;
+            score.textContent = `Điểm: ${scoreCount}`;
+            progress.textContent = `Câu ${currentQuestionIndex + 1}/${currentQuestions.length}`;
+
+            const currentQuestion = currentQuestions[currentQuestionIndex];
+            questionEl.textContent = currentQuestion.en;
+            answersEl.innerHTML = '';
+            
+            let options = [currentQuestion];
+            const allVocabForOptions = JSON.parse(localStorage.getItem('combinedVocabulary')) || initialDefaultVocabularyList;
+            while (options.length < 4 && options.length < allVocabForOptions.length) {
+                const randomWord = allVocabForOptions[Math.floor(Math.random() * allVocabForOptions.length)];
+                if (!options.some(opt => opt.en === randomWord.en)) {
+                    options.push(randomWord);
+                }
+            }
+            
+            shuffleArray(options).forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option.vi;
+                button.className = 'w-full bg-white text-gray-800 p-4 rounded-lg shadow hover:bg-pink-200 transition-colors text-lg';
+                button.onclick = (event) => checkAnswer(option, currentQuestion, event.target);
+                answersEl.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedOption, correctQuestion, buttonEl) {
+            Array.from(answersEl.children).forEach(btn => btn.disabled = true);
+
+            if (selectedOption.en === correctQuestion.en) {
+                buttonEl.classList.remove('hover:bg-pink-200');
+                buttonEl.classList.add('bg-green-400', 'text-white');
+                scoreCount++;
+                setTimeout(nextQuestion, 1000);
+            } else {
+                buttonEl.classList.add('shake', 'bg-red-400', 'text-white');
+                Array.from(answersEl.children).forEach(btn => {
+                    if (btn.textContent === correctQuestion.vi) {
+                         btn.classList.add('bg-green-400', 'text-white');
+                    }
+                });
+
+                correctAnswerText.textContent = `${correctQuestion.en}: ${correctQuestion.vi}`;
+                popupContainer.classList.remove('hidden');
+                welcomePopup.classList.add('hidden');
+                endPopup.classList.add('hidden');
+                wrongPopup.classList.remove('hidden');
+            }
+        }
+        
+        function nextQuestion() {
+             currentQuestionIndex++;
+            if (currentQuestionIndex < currentQuestions.length) {
+                displayQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            incrementPlayCount();
+            const endPopupEl = document.getElementById('endPopup');
+            const scorePercentage = currentQuestions.length > 0 ? (scoreCount / currentQuestions.length) * 100 : 0;
+
+            document.getElementById('heartContainer').classList.add('hidden');
+            
+            if (scorePercentage < 40) {
+                endPopupEl.className = "popup-animate p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm bg-red-500 text-white";
+                endTitle.textContent = "Cần cố gắng!";
+                endMessage.textContent = `Điểm: ${scoreCount}/${currentQuestions.length}. Làm lại nào chíp!`;
+            } else if (scorePercentage < 70) {
+                endPopupEl.className = "popup-animate p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm bg-yellow-500 text-white";
+                endTitle.textContent = "Tạm ổn!";
+                endMessage.textContent = `Điểm: ${scoreCount}/${currentQuestions.length}. Khá rồi, làm lại để đạt điểm cao hơn nhé!`;
+            } else if (scorePercentage < 100) {
+                endPopupEl.className = "popup-animate p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm bg-green-500 text-white";
+                endTitle.textContent = "Rất tốt!";
+                endMessage.textContent = `Điểm: ${scoreCount}/${currentQuestions.length}. Giỏi lắm chíp!`;
+            } else {
+                endPopupEl.className = "popup-animate p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm bg-pink-500 text-white";
+                endTitle.textContent = "Hoàn hảo!";
+                endMessage.textContent = "Chíp đáng yêu giỏi quá! <3";
+                document.getElementById('heartContainer').classList.remove('hidden');
+            }
+
+            popupContainer.classList.remove('hidden');
+            welcomePopup.classList.add('hidden');
+            wrongPopup.classList.add('hidden');
+            endPopup.classList.remove('hidden');
+        }
+
+        function goToHome() {
+            popupContainer.classList.add('hidden');
+            endPopup.classList.add('hidden');
+            quizScreenContent.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            updatePlayCount();
+        }
+        
+        startBtn.addEventListener('click', startGame);
+        speakBtn.addEventListener('click', () => speak(questionEl.textContent));
+        quizLogoutBtn.addEventListener('click', () => {
+             goToHome();
+             showPage('loginPage');
+        });
+        
+        closeWelcomeBtn.addEventListener('click', () => {
+            popupContainer.classList.add('hidden');
+            welcomePopup.classList.add('hidden');
+        });
+
+        closeWrongPopup.addEventListener('click', () => {
+            popupContainer.classList.add('hidden');
+            wrongPopup.classList.add('hidden');
+            nextQuestion();
+        });
+
+        replayBtn.addEventListener('click', () => {
+            popupContainer.classList.add('hidden');
+            endPopup.classList.add('hidden');
+            startGame();
+        });
+        homeBtn.addEventListener('click', goToHome);
+    }
+</script>
+
+</body>
+</html>
+
