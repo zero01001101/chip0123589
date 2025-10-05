@@ -90,7 +90,7 @@
             </div>
         </form>
         <!-- Login Popup -->
-        <div id="loginPopupOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div id="loginPopupOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div class="bg-pink-500 text-white p-6 rounded-lg shadow-xl text-center max-w-sm w-full">
                 <p id="loginPopupMessage" class="mb-4 text-lg"></p>
                 <button id="closeLoginPopupButton" class="bg-pink-700 hover:bg-pink-800 text-white font-bold py-2 px-6 rounded-lg">Thử lại</button>
@@ -104,7 +104,7 @@
     <div id="adminPage" class="hidden container mx-auto p-6 bg-white rounded-2xl shadow-xl max-w-4xl">
         <header class="text-center mb-6 flex justify-between items-center">
             <div></div> <!-- Spacer -->
-            <h1 class="text-4xl font-bold text-pink-500">Tạo Đề Trắc Nghiệm</h1>
+            <h1 class="text-4xl font-bold text-pink-500">Tạo Đề Mặc Định</h1>
             <button id="adminLogoutBtn" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Đăng xuất</button>
         </header>
         <main>
@@ -114,14 +114,18 @@
                 <input type="file" id="file-input" class="hidden" accept=".docx" multiple>
                 <div id="file-chosen" class="mt-4 text-gray-600">Chưa có file nào được chọn</div>
             </div>
-            <div id="actions-container" class="text-center my-6 space-x-4">
-                <button id="generate-btn" class="text-lg px-8 py-3 bg-pink-400 text-white font-bold rounded-xl hover:bg-pink-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Thêm Từ Mới</button>
-                <button id="undo-btn" class="text-lg px-8 py-3 bg-gray-500 text-white font-bold rounded-xl hover:bg-gray-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Hoàn tác</button>
+            <div id="actions-container" class="text-center my-6">
+                <button id="generate-btn" class="text-lg px-8 py-3 bg-pink-400 text-white font-bold rounded-xl hover:bg-pink-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Lưu Làm Đề Mặc Định</button>
             </div>
             <div id="status" class="text-center text-pink-600 font-medium h-5 mb-4"></div>
+            <!-- Demo Container -->
+            <div id="demo-container" class="hidden mt-6">
+                <h2 class="text-2xl font-bold mb-3 text-pink-600 text-center">Bản xem trước đề mặc định mới</h2>
+                <pre id="demo-output" class="bg-pink-50 p-4 rounded-lg h-64 overflow-auto whitespace-pre-wrap break-words"></pre>
+            </div>
         </main>
          <!-- Admin Popup -->
-        <div id="adminPopupOverlay" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4">
+        <div id="adminPopupOverlay" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50">
             <div class="popup-animate bg-white p-8 rounded-2xl shadow-lg text-center max-w-sm">
                 <p id="adminPopupMessage" class="mb-6 text-lg text-gray-700"></p>
                 <button id="adminPopupCloseBtn" class="bg-pink-400 text-white font-bold py-2 px-6 rounded-xl hover:bg-pink-500">Đã hiểu</button>
@@ -158,7 +162,7 @@
             <div id="answers" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
         </div>
         <!-- Quiz Popups Container -->
-        <div id="quizPopupContainer" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div id="quizPopupContainer" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
             <!-- Welcome -->
             <div id="welcomePopup" class="popup-animate bg-pink-100 p-8 rounded-2xl shadow-lg text-center w-full max-w-sm hidden">
                 <div class="w-24 h-24 mx-auto mb-4 text-pink-300 flex items-center justify-center">
@@ -184,15 +188,32 @@
                      <button id="homeBtn" class="bg-pink-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-pink-600">Trang chủ</button>
                  </div>
             </div>
+             <!-- Quiz Error Popup -->
+            <div id="quizErrorPopup" class="popup-animate bg-yellow-500 text-white p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm hidden">
+                <h3 class="text-2xl font-bold mb-4 mali-font">Thông báo</h3>
+                <p id="quizErrorMessage" class="text-lg mb-6"></p>
+                <button id="closeQuizErrorPopup" class="bg-yellow-700 text-white font-bold px-6 py-2 rounded-lg">Đã hiểu</button>
+            </div>
         </div>
     </div>
 
 
 <script>
     // =================================================================
-    //                  MAIN APPLICATION CONTROLLER
+    //                  GLOBAL INITIALIZATION
     // =================================================================
     document.addEventListener('DOMContentLoaded', () => {
+        const initialDefaultVocabularyList = [
+            { en: 'teacher', vi: 'giáo viên' }, { en: 'doctor', vi: 'bác sĩ' }, { en: 'nurse', vi: 'y tá' }, 
+            { en: 'engineer', vi: 'kỹ sư' }, { en: 'worker', vi: 'công nhân' }, { en: 'farmer', vi: 'nông dân' }, 
+            { en: 'driver', vi: 'tài xế' }, { en: 'student', vi: 'học sinh' }, { en: 'police officer', vi: 'cảnh sát' },
+            { en: 'singer', vi: 'ca sĩ' }
+        ];
+
+        if (!localStorage.getItem('defaultVocabulary')) {
+            localStorage.setItem('defaultVocabulary', JSON.stringify(initialDefaultVocabularyList));
+        }
+
         const loginPage = document.getElementById('loginPage');
         const adminPage = document.getElementById('adminPage');
         const quizPage = document.getElementById('quizPage');
@@ -246,8 +267,8 @@
             } else if (username === 'chip230905' && password === 'chip230905') {
                 showPage('quizPage');
                 loginForm.reset();
-                document.getElementById('quizPopupContainer').classList.remove('hidden');
                 document.getElementById('welcomePopup').classList.remove('hidden');
+                document.getElementById('quizPopupContainer').classList.remove('hidden');
             } else {
                 showLoginPopup('Sai tài khoản hoặc mật khẩu!');
             }
@@ -277,30 +298,20 @@
         const fileInput = document.getElementById('file-input');
         const fileChosen = document.getElementById('file-chosen');
         const generateBtn = document.getElementById('generate-btn');
-        const undoBtn = document.getElementById('undo-btn');
         const statusDiv = document.getElementById('status');
         const dropZone = document.getElementById('drop-zone');
         const popupOverlay = document.getElementById('adminPopupOverlay');
         const popupMessage = document.getElementById('adminPopupMessage');
         const popupCloseBtn = document.getElementById('adminPopupCloseBtn');
         const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+        const demoContainer = document.getElementById('demo-container');
         
-        // Function to update the state of the undo button
-        function updateUndoButtonState() {
-            const historyStr = localStorage.getItem('vocabularyHistory');
-            const history = historyStr ? JSON.parse(historyStr) : [];
-            undoBtn.disabled = history.length === 0;
-        }
-
-        // Initial state check when admin page loads
-        updateUndoButtonState();
-
-
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
                 fileChosen.textContent = `Đã chọn ${fileInput.files.length} file.`;
                 generateBtn.disabled = false;
                 statusDiv.textContent = '';
+                demoContainer.classList.add('hidden');
             } else {
                 fileChosen.textContent = 'Chưa có file nào được chọn';
                 generateBtn.disabled = true;
@@ -327,25 +338,6 @@
             handleFiles(fileInput.files);
         });
         
-        undoBtn.addEventListener('click', () => {
-            const historyStr = localStorage.getItem('vocabularyHistory');
-            let history = historyStr ? JSON.parse(historyStr) : [];
-
-            if (history.length > 0) {
-                const lastState = history.pop();
-                localStorage.setItem('combinedVocabulary', lastState.combined);
-                localStorage.setItem('latestVocabulary', lastState.latest);
-                localStorage.setItem('vocabularyHistory', JSON.stringify(history));
-
-                const restoredCombined = JSON.parse(lastState.combined);
-                showAdminPopup(`Hoàn tác thành công! Kho đề đã quay lại trạng thái với ${restoredCombined.length} từ.`);
-                updateUndoButtonState();
-            } else {
-                showAdminPopup("Không có gì để hoàn tác.");
-            }
-        });
-
-
         function handleFiles(files) {
             statusDiv.textContent = 'Đang xử lý file...';
             let newWordsFromFile = [];
@@ -386,40 +378,25 @@
                         }
                     });
 
-                    const existingCombinedVocabStr = localStorage.getItem('combinedVocabulary');
-                    const existingLatestVocabStr = localStorage.getItem('latestVocabulary');
-                    
-                    const currentState = {
-                        combined: existingCombinedVocabStr || '[]',
-                        latest: existingLatestVocabStr || '[]'
-                    };
-                    const historyStr = localStorage.getItem('vocabularyHistory');
-                    let history = historyStr ? JSON.parse(historyStr) : [];
-                    history.push(currentState);
-                    localStorage.setItem('vocabularyHistory', JSON.stringify(history));
-
-                    let combinedVocab = existingCombinedVocabStr ? JSON.parse(existingCombinedVocabStr) : [];
-                    const existingWordsSet = new Set(combinedVocab.map(item => item.en));
-                    
-                    const trulyNewWords = newWordsFromFile.filter(word => !existingWordsSet.has(word.en));
-
-                    if (trulyNewWords.length === 0) {
-                        // Revert history push if no new words are added
-                        history.pop();
-                        localStorage.setItem('vocabularyHistory', JSON.stringify(history));
-                        throw new Error("Không có từ vựng mới nào trong file hoặc các từ này đã tồn tại.");
+                    if (newWordsFromFile.length === 0) {
+                        throw new Error("Không tìm thấy từ vựng hợp lệ nào trong file đã chọn.");
                     }
                     
-                    const updatedCombinedVocab = [...combinedVocab, ...trulyNewWords];
-                    localStorage.setItem('combinedVocabulary', JSON.stringify(updatedCombinedVocab));
-                    localStorage.setItem('latestVocabulary', JSON.stringify(trulyNewWords));
+                    localStorage.setItem('defaultVocabulary', JSON.stringify(newWordsFromFile));
                     
+                    const demoOutput = document.getElementById('demo-output');
+                    let demoText = '';
+                    newWordsFromFile.forEach((word, index) => {
+                        demoText += `${index + 1}. ${word.en}: ${word.vi}\n`;
+                    });
+                    demoOutput.textContent = demoText;
+                    demoContainer.classList.remove('hidden');
+
                     statusDiv.textContent = '';
-                    showAdminPopup(`Thành công! Đã thêm ${trulyNewWords.length} từ vựng mới. Tổng số từ trong kho đề: ${updatedCombinedVocab.length}.`);
+                    showAdminPopup(`Thành công! Đã lưu bộ đề mới với ${newWordsFromFile.length} từ làm đề mặc định.`);
                     fileInput.value = '';
                     fileChosen.textContent = 'Chưa có file nào được chọn';
                     generateBtn.disabled = true;
-                    updateUndoButtonState();
                 })
                 .catch(handleError);
         }
@@ -444,17 +421,11 @@
     //                     QUIZ PAGE LOGIC
     // =================================================================
     function initializeQuiz(showPage) {
-        const initialDefaultVocabularyList = [
-            { en: 'teacher', vi: 'giáo viên' }, { en: 'doctor', vi: 'bác sĩ' }, { en: 'nurse', vi: 'y tá' }, 
-            { en: 'engineer', vi: 'kỹ sư' }, { en: 'worker', vi: 'công nhân' }, { en: 'farmer', vi: 'nông dân' }, 
-            { en: 'driver', vi: 'tài xế' }, { en: 'student', vi: 'học sinh' }, { en: 'police officer', vi: 'cảnh sát' },
-            { en: 'singer', vi: 'ca sĩ' }
-        ];
-
         let currentQuestions = [];
         let currentQuestionIndex = 0;
         let scoreCount = 0;
         const synth = window.speechSynthesis;
+        let femaleVoice = null;
 
         const startScreen = document.getElementById('startScreen');
         const quizScreenContent = document.getElementById('quizScreenContent');
@@ -481,6 +452,36 @@
         const replayBtn = document.getElementById('replayBtn');
         const homeBtn = document.getElementById('homeBtn');
 
+        const quizErrorPopup = document.getElementById('quizErrorPopup');
+        const quizErrorMessage = document.getElementById('quizErrorMessage');
+        const closeQuizErrorPopup = document.getElementById('closeQuizErrorPopup');
+
+        function showQuizErrorPopup(message) {
+            quizErrorMessage.textContent = message;
+            popupContainer.classList.remove('hidden');
+            quizErrorPopup.classList.remove('hidden');
+            welcomePopup.classList.add('hidden');
+            wrongPopup.classList.add('hidden');
+            endPopup.classList.add('hidden');
+        }
+
+        closeQuizErrorPopup.addEventListener('click', () => {
+            popupContainer.classList.add('hidden');
+            quizErrorPopup.classList.add('hidden');
+        });
+
+        function loadVoices() {
+            const voices = synth.getVoices();
+            femaleVoice = voices.find(voice => voice.name === 'Google US English' && voice.lang === 'en-US');
+            if (!femaleVoice) femaleVoice = voices.find(voice => voice.lang === 'en-US' && /female/i.test(voice.name));
+            if (!femaleVoice) femaleVoice = voices.find(voice => voice.lang === 'en-US');
+        }
+
+        loadVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
         function getTodayString() {
             const today = new Date();
             return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
@@ -490,12 +491,11 @@
             const todayKey = `quizPlayCount_${getTodayString()}`;
             const count = localStorage.getItem(todayKey) || 0;
             playCountEl.textContent = count;
-            return parseInt(count);
         }
 
         function incrementPlayCount() {
-            let count = updatePlayCount();
             const todayKey = `quizPlayCount_${getTodayString()}`;
+            let count = parseInt(localStorage.getItem(todayKey) || 0);
             localStorage.setItem(todayKey, count + 1);
             updatePlayCount();
         }
@@ -509,6 +509,8 @@
             if (synth.speaking) synth.cancel();
             const utterThis = new SpeechSynthesisUtterance(text);
             utterThis.lang = 'en-US';
+            utterThis.volume = 1;
+            if (femaleVoice) utterThis.voice = femaleVoice;
             synth.speak(utterThis);
         }
 
@@ -521,29 +523,20 @@
         }
         
         function startGame() {
+            const defaultVocab = JSON.parse(localStorage.getItem('defaultVocabulary')) || [];
+            
+            if (defaultVocab.length < 4) {
+                showQuizErrorPopup("Bộ đề mặc định cần ít nhất 4 từ để bắt đầu. Vui lòng yêu cầu admin tạo đề mới.");
+                return;
+            }
+
             startScreen.classList.add('hidden');
             quizScreenContent.classList.remove('hidden');
             
             scoreCount = 0;
             currentQuestionIndex = 0;
             
-            // --- NEW QUIZ GENERATION LOGIC ---
-            const latestVocab = JSON.parse(localStorage.getItem('latestVocabulary')) || [];
-            const combinedVocab = JSON.parse(localStorage.getItem('combinedVocabulary')) || initialDefaultVocabularyList;
-            
-            const latestWordsSet = new Set(latestVocab.map(item => item.en));
-            const oldVocab = combinedVocab.filter(item => !latestWordsSet.has(item.en));
-
-            const newQuestions = shuffleArray([...latestVocab]).slice(0, 7);
-            const oldQuestions = shuffleArray([...oldVocab]).slice(0, 3);
-            
-            currentQuestions = shuffleArray([...newQuestions, ...oldQuestions]);
-            
-            if (currentQuestions.length < 4) {
-                alert("Bộ đề cần ít nhất 4 từ vựng để bắt đầu. Vui lòng yêu cầu admin tạo bộ đề mới.");
-                goToHome();
-                return;
-            }
+            currentQuestions = shuffleArray([...defaultVocab]).slice(0, 10);
 
             displayQuestion();
         }
@@ -558,8 +551,8 @@
             answersEl.innerHTML = '';
             
             let options = [currentQuestion];
-            const allVocabForOptions = JSON.parse(localStorage.getItem('combinedVocabulary')) || initialDefaultVocabularyList;
-            while (options.length < 4 && options.length < allVocabForOptions.length) {
+            const allVocabForOptions = JSON.parse(localStorage.getItem('defaultVocabulary'));
+            while (options.length < 4) {
                 const randomWord = allVocabForOptions[Math.floor(Math.random() * allVocabForOptions.length)];
                 if (!options.some(opt => opt.en === randomWord.en)) {
                     options.push(randomWord);
@@ -642,7 +635,11 @@
 
         function goToHome() {
             popupContainer.classList.add('hidden');
+            welcomePopup.classList.add('hidden');
+            wrongPopup.classList.add('hidden');
             endPopup.classList.add('hidden');
+            quizErrorPopup.classList.add('hidden');
+            
             quizScreenContent.classList.add('hidden');
             startScreen.classList.remove('hidden');
             updatePlayCount();
