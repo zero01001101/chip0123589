@@ -114,14 +114,21 @@
                 <input type="file" id="file-input" class="hidden" accept=".docx" multiple>
                 <div id="file-chosen" class="mt-4 text-gray-600">Chưa có file nào được chọn</div>
             </div>
-            <div id="actions-container" class="text-center my-6">
-                <button id="generate-btn" class="text-lg px-8 py-3 bg-pink-400 text-white font-bold rounded-xl hover:bg-pink-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Lưu Làm Đề Mặc Định</button>
+            <div id="actions-container" class="text-center my-6 space-x-4">
+                <button id="preview-btn" class="text-lg px-8 py-3 bg-pink-400 text-white font-bold rounded-xl hover:bg-pink-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Xem Trước Đề</button>
+                <button id="save-btn" class="hidden text-lg px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-colors">Lưu Làm Đề Mặc Định</button>
             </div>
             <div id="status" class="text-center text-pink-600 font-medium h-5 mb-4"></div>
             <!-- Demo Container -->
-            <div id="demo-container" class="hidden mt-6">
-                <h2 class="text-2xl font-bold mb-3 text-pink-600 text-center">Bản xem trước đề mặc định mới</h2>
-                <pre id="demo-output" class="bg-pink-50 p-4 rounded-lg h-64 overflow-auto whitespace-pre-wrap break-words"></pre>
+            <div id="demo-container" class="hidden grid md:grid-cols-2 gap-6 mt-6">
+                <div>
+                    <h2 class="text-2xl font-bold mb-3 text-pink-600">Bản xem trước Đề</h2>
+                    <pre id="demo-quiz-output" class="bg-pink-50 p-4 rounded-lg h-96 overflow-auto whitespace-pre-wrap break-words"></pre>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold mb-3 text-pink-600">Bản xem trước Đáp Án</h2>
+                    <pre id="demo-answers-output" class="bg-pink-50 p-4 rounded-lg h-96 overflow-auto whitespace-pre-wrap break-words"></pre>
+                </div>
             </div>
         </main>
          <!-- Admin Popup -->
@@ -175,8 +182,13 @@
             <!-- Wrong Answer -->
             <div id="wrongPopup" class="popup-animate bg-white p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm hidden">
                 <h3 class="text-2xl font-bold text-red-500 mb-4 mali-font">Sai rồi!</h3>
-                <p class="text-gray-700 mb-4">Đáp án đúng là: <span id="correctAnswerText" class="font-bold text-green-600"></span></p>
-                <button id="closeWrongPopup" class="bg-pink-500 text-white font-bold px-6 py-2 rounded-lg">Câu tiếp theo</button>
+                <p class="text-gray-700 mb-4">
+                    Đáp án "<span id="wrongAnswerText" class="font-bold"></span>" có nghĩa là <span id="wrongAnswerInEnglish" class="font-bold text-red-600"></span>
+                    <button id="speakWrongBtn" class="ml-1 inline-block align-middle text-red-500 hover:text-red-700">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.383-.217zM14.657 2.929a1 1 0 011.414 0A9 9 0 0119 10a9 9 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7 7 0 0017 10a7 7 0 00-2.343-5.657 1 1 0 010-1.414zm-2.828 2.828a1 1 0 011.414 0A5 5 0 0115 10a5 5 0 01-1.757 3.536 1 1 0 11-1.414-1.414A3 3 0 0013 10a3 3 0 00-.879-2.121 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    </button>
+                </p>
+                <button id="closeWrongPopup" class="bg-pink-500 text-white font-bold px-6 py-2 rounded-lg">Câu hỏi tiếp theo nào Chíp!</button>
             </div>
             <!-- End Game -->
             <div id="endPopup" class="popup-animate p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm hidden">
@@ -295,9 +307,11 @@
     //                  ADMIN PAGE LOGIC
     // =================================================================
     function initializeAdmin(showPage) {
+        let previewedWords = [];
         const fileInput = document.getElementById('file-input');
         const fileChosen = document.getElementById('file-chosen');
-        const generateBtn = document.getElementById('generate-btn');
+        const previewBtn = document.getElementById('preview-btn');
+        const saveBtn = document.getElementById('save-btn');
         const statusDiv = document.getElementById('status');
         const dropZone = document.getElementById('drop-zone');
         const popupOverlay = document.getElementById('adminPopupOverlay');
@@ -305,16 +319,31 @@
         const popupCloseBtn = document.getElementById('adminPopupCloseBtn');
         const adminLogoutBtn = document.getElementById('adminLogoutBtn');
         const demoContainer = document.getElementById('demo-container');
+        const demoQuizOutput = document.getElementById('demo-quiz-output');
+        const demoAnswersOutput = document.getElementById('demo-answers-output');
         
+        function resetAdminView() {
+            previewedWords = [];
+            fileInput.value = '';
+            fileChosen.textContent = 'Chưa có file nào được chọn';
+            previewBtn.disabled = true;
+            previewBtn.classList.remove('hidden');
+            saveBtn.classList.add('hidden');
+            demoContainer.classList.add('hidden');
+            statusDiv.textContent = '';
+        }
+
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
                 fileChosen.textContent = `Đã chọn ${fileInput.files.length} file.`;
-                generateBtn.disabled = false;
+                previewBtn.disabled = false;
                 statusDiv.textContent = '';
                 demoContainer.classList.add('hidden');
+                saveBtn.classList.add('hidden');
+                previewBtn.classList.remove('hidden');
             } else {
                 fileChosen.textContent = 'Chưa có file nào được chọn';
-                generateBtn.disabled = true;
+                previewBtn.disabled = true;
             }
         });
 
@@ -330,17 +359,26 @@
         
         adminLogoutBtn.addEventListener('click', () => showPage('loginPage'));
 
-        generateBtn.addEventListener('click', () => {
+        previewBtn.addEventListener('click', () => {
             if (fileInput.files.length === 0) {
                 showAdminPopup('Vui lòng chọn ít nhất một file Word!');
                 return;
             }
-            handleFiles(fileInput.files);
+            handleFilePreview(fileInput.files);
+        });
+
+        saveBtn.addEventListener('click', () => {
+            if (previewedWords.length > 0) {
+                localStorage.setItem('defaultVocabulary', JSON.stringify(previewedWords));
+                showAdminPopup(`Thành công! Đã lưu bộ đề mới với ${previewedWords.length} từ làm đề mặc định.`);
+                resetAdminView();
+            } else {
+                showAdminPopup('Không có dữ liệu đề để lưu.');
+            }
         });
         
-        function handleFiles(files) {
+        function handleFilePreview(files) {
             statusDiv.textContent = 'Đang xử lý file...';
-            let newWordsFromFile = [];
             
             const filePromises = Array.from(files).map(file => {
                 return new Promise((resolve, reject) => {
@@ -358,6 +396,7 @@
             Promise.all(filePromises)
                 .then(htmlResults => {
                     const uniqueWordsInFile = new Set();
+                    let tempWords = [];
                     htmlResults.forEach(html => {
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = html;
@@ -371,34 +410,67 @@
                                     const vie = cells[1].innerText.trim();
                                     if (eng && vie && !uniqueWordsInFile.has(eng)) {
                                         uniqueWordsInFile.add(eng);
-                                        newWordsFromFile.push({ en: eng, vi: vie });
+                                        tempWords.push({ en: eng, vi: vie });
                                     }
                                 }
                             }
                         }
                     });
 
-                    if (newWordsFromFile.length === 0) {
-                        throw new Error("Không tìm thấy từ vựng hợp lệ nào trong file đã chọn.");
+                    if (tempWords.length < 4) {
+                        throw new Error("File phải chứa ít nhất 4 từ vựng hợp lệ để tạo bản xem trước.");
                     }
                     
-                    localStorage.setItem('defaultVocabulary', JSON.stringify(newWordsFromFile));
+                    previewedWords = tempWords;
+                    generateDemoQuiz(previewedWords);
                     
-                    const demoOutput = document.getElementById('demo-output');
-                    let demoText = '';
-                    newWordsFromFile.forEach((word, index) => {
-                        demoText += `${index + 1}. ${word.en}: ${word.vi}\n`;
-                    });
-                    demoOutput.textContent = demoText;
                     demoContainer.classList.remove('hidden');
-
-                    statusDiv.textContent = '';
-                    showAdminPopup(`Thành công! Đã lưu bộ đề mới với ${newWordsFromFile.length} từ làm đề mặc định.`);
-                    fileInput.value = '';
-                    fileChosen.textContent = 'Chưa có file nào được chọn';
-                    generateBtn.disabled = true;
+                    previewBtn.classList.add('hidden');
+                    saveBtn.classList.remove('hidden');
+                    statusDiv.textContent = 'Bản xem trước đã sẵn sàng. Hãy kiểm tra và lưu lại.';
                 })
                 .catch(handleError);
+        }
+
+        function generateDemoQuiz(wordList) {
+            let quiz = [];
+            let answers = [];
+            const allMeanings = wordList.map(item => item.vi);
+
+            // Shuffle and take up to 10 questions for the demo
+            let questionsPool = [...wordList].sort(() => 0.5 - Math.random()).slice(0, 10);
+            
+            questionsPool.forEach(({ en: correctWord, vi: correctMeaning }, i) => {
+                const otherMeanings = allMeanings.filter(meaning => meaning !== correctMeaning);
+                let wrongOptions = [];
+                
+                // Get 3 unique wrong options
+                while(wrongOptions.length < 3 && otherMeanings.length > 0){
+                    const randomIndex = Math.floor(Math.random() * otherMeanings.length);
+                    wrongOptions.push(otherMeanings.splice(randomIndex, 1)[0]);
+                }
+                 // If not enough unique meanings, fill with placeholders
+                while(wrongOptions.length < 3){
+                    wrongOptions.push("Đáp án không hợp lệ");
+                }
+                
+                const choices = [...wrongOptions, correctMeaning];
+                choices.sort(() => Math.random() - 0.5); 
+
+                let questionStr = `Câu ${i + 1}: Từ '${correctWord}' có nghĩa là gì?\n`;
+                const options = ['A', 'B', 'C', 'D'];
+                choices.forEach((choice, index) => {
+                    questionStr += `  ${options[index]}. ${choice}\n`;
+                });
+
+                quiz.push(questionStr);
+
+                const correctOptionChar = options[choices.indexOf(correctMeaning)];
+                answers.push(`Câu ${i + 1}: ${correctOptionChar}`);
+            });
+
+            demoQuizOutput.textContent = quiz.join('\n');
+            demoAnswersOutput.textContent = answers.join('\n');
         }
         
         function showAdminPopup(message) {
@@ -445,7 +517,7 @@
         const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
         
         const wrongPopup = document.getElementById('wrongPopup');
-        const correctAnswerText = document.getElementById('correctAnswerText');
+        const speakWrongBtn = document.getElementById('speakWrongBtn');
         const closeWrongPopup = document.getElementById('closeWrongPopup');
 
         const endPopup = document.getElementById('endPopup');
@@ -552,7 +624,7 @@
             
             let options = [currentQuestion];
             const allVocabForOptions = JSON.parse(localStorage.getItem('defaultVocabulary'));
-            while (options.length < 4) {
+            while (options.length < 4 && options.length < allVocabForOptions.length) {
                 const randomWord = allVocabForOptions[Math.floor(Math.random() * allVocabForOptions.length)];
                 if (!options.some(opt => opt.en === randomWord.en)) {
                     options.push(randomWord);
@@ -583,8 +655,11 @@
                          btn.classList.add('bg-green-400', 'text-white');
                     }
                 });
+                
+                document.getElementById('wrongAnswerText').textContent = selectedOption.vi;
+                document.getElementById('wrongAnswerInEnglish').textContent = selectedOption.en;
+                speakWrongBtn.onclick = () => speak(selectedOption.en);
 
-                correctAnswerText.textContent = `${correctQuestion.en}: ${correctQuestion.vi}`;
                 popupContainer.classList.remove('hidden');
                 welcomePopup.classList.add('hidden');
                 endPopup.classList.add('hidden');
