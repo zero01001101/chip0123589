@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* CSS tùy chỉnh cho hiệu ứng và font chữ */
@@ -36,12 +36,17 @@
             filter: drop-shadow(0 10px 8px rgba(236, 72, 153, 0.4)) drop-shadow(0 4px 3px rgba(236, 72, 153, 0.5));
         }
 
+        /* CSS cho popup */
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+
     </style>
 </head>
 <body class="bg-gradient-to-br from-rose-100 to-pink-200 min-h-screen flex items-center justify-center p-4">
 
     <!-- Container chính -->
-    <main class="w-full max-w-lg mx-auto text-center">
+    <main class="w-full max-w-2xl mx-auto text-center">
         
         <!-- Trái tim SVG -->
         <div class="h-auto flex justify-center items-center mb-4 heart-animation">
@@ -63,8 +68,8 @@
 
         <!-- Các nút bấm -->
         <div class="space-y-6">
-            <!-- Container cho 2 nút trái tim nằm ngang -->
-            <div class="flex flex-col sm:flex-row items-center justify-center sm:space-x-6 space-y-6 sm:space-y-0">
+            <!-- Container cho 3 nút trái tim nằm ngang -->
+            <div class="flex flex-col sm:flex-row items-center justify-center sm:space-x-4 space-y-6 sm:space-y-0">
                  <!-- Nút Vocabulary -->
                 <a href="https://docs.google.com/document/d/1hf-oz3-28Qy4peWvdJUCQIBZDut4n5HQjK9GICptHwY/edit?usp=sharing" target="_blank" rel="noopener noreferrer" 
                    class="group transition-transform transform hover:scale-105">
@@ -82,6 +87,18 @@
                         <text x="12" y="13" text-anchor="middle" dominant-baseline="middle" font-size="3.2" font-family="Pacifico" class="fill-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">Exercises</text>
                     </svg>
                 </a>
+
+                <!-- Nút Thời khóa biểu (mở popup) -->
+                <a href="#" id="open-modal-btn"
+                   class="group transition-transform transform hover:scale-105">
+                    <svg viewBox="0 0 24 24" class="w-40 h-40 drop-shadow-lg">
+                        <path class="fill-pink-500 group-hover:fill-pink-600 transition-colors" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        <text x="12" y="13" text-anchor="middle" dominant-baseline="central" font-size="2.5" font-family="Pacifico" class="fill-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">
+                            <tspan x="12" dy="-0.6em">Thời khóa</tspan>
+                            <tspan x="12" dy="1.2em">biểu</tspan>
+                        </text>
+                    </svg>
+                </a>
             </div>
 
             <!-- Tiktok Info -->
@@ -91,6 +108,52 @@
 
         </div>
     </main>
+    
+    <!-- Popup Thời khóa biểu -->
+    <div id="schedule-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden z-50">
+        <!-- Nội dung popup -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-xs w-full text-center relative font-pacifico">
+            <!-- Nút đóng -->
+            <button id="close-modal-btn" class="absolute top-2 right-3 text-gray-400 hover:text-gray-800 text-4xl font-light">&times;</button>
+            
+            <h2 class="text-4xl text-pink-600 mb-6 drop-shadow-sm">Chọn TKB</h2>
+            
+            <div class="space-y-4">
+                <!-- Button của Chíp -->
+                <a href="#" target="_blank" rel="noopener noreferrer" class="block w-full bg-pink-500 text-white py-3 px-4 rounded-full text-2xl hover:bg-pink-600 transition-colors shadow-md">
+                    của Chíp
+                </a>
+                <!-- Button của anh -->
+                <a href="#" target="_blank" rel="noopener noreferrer" class="block w-full bg-pink-500 text-white py-3 px-4 rounded-full text-2xl hover:bg-pink-600 transition-colors shadow-md">
+                    của anh
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const openModalBtn = document.getElementById('open-modal-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const modal = document.getElementById('schedule-modal');
+
+        // Mở popup
+        openModalBtn.addEventListener('click', (e) => {
+            e.preventDefault(); 
+            modal.classList.remove('hidden');
+        });
+
+        // Đóng popup bằng nút X
+        closeModalBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+
+        // Đóng popup khi nhấn ra ngoài
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    </script>
 
 </body>
 </html>
