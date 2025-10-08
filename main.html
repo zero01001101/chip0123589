@@ -99,6 +99,26 @@
             <p class="text-gray-600 mb-6">Yêu chíp nhiều! &lt;3</p>
             <button id="closeWelcomeBtn" class="bg-pink-500 text-white font-bold py-2 px-8 rounded-full hover:bg-pink-600">Học thôi nào!</button>
         </div>
+
+        <!-- Action Choice Popup -->
+        <div id="actionPopup" class="popup-animate bg-white p-8 rounded-2xl shadow-lg text-center w-full max-w-sm hidden">
+            <h3 id="actionPopupTitle" class="text-2xl font-bold text-pink-700 mb-6 mali-font"></h3>
+            <div class="flex flex-col space-y-4">
+                <button id="viewVocabBtn" class="bg-blue-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-600">Xem Từ Vựng</button>
+                <button id="startQuizBtn" class="bg-pink-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-pink-600">Làm Bài Tập</button>
+            </div>
+            <button id="closeActionPopup" class="mt-6 text-gray-500 hover:text-gray-700">Đóng</button>
+        </div>
+
+        <!-- Vocabulary List Popup -->
+        <div id="vocabPopup" class="popup-animate bg-white p-6 rounded-2xl shadow-lg text-center w-full max-w-md hidden">
+            <h3 id="vocabPopupTitle" class="text-2xl font-bold text-pink-700 mb-4 mali-font"></h3>
+            <div id="vocabListContainer" class="text-left max-h-96 overflow-y-auto bg-gray-50 p-4 rounded-lg">
+                <!-- Vocab list will be generated here -->
+            </div>
+            <button id="closeVocabPopup" class="mt-6 bg-pink-500 text-white font-bold py-2 px-8 rounded-lg hover:bg-pink-600">Đóng</button>
+        </div>
+
         <!-- Wrong Answer -->
         <div id="wrongPopup" class="popup-animate bg-white p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm hidden">
             <h3 class="text-2xl font-bold text-red-500 mb-4 mali-font">Sai rồi!</h3>
@@ -165,28 +185,102 @@
             weeklyVocabularies.push(allVocabulary.slice(start, end));
         }
 
-        initializeWeekSelection(weeklyVocabularies);
-        initializeQuiz();
+        // --- GLOBAL ELEMENTS & STATE ---
+        const popupContainer = document.getElementById('quizPopupContainer');
+        const welcomePopup = document.getElementById('welcomePopup');
+        const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
+        const actionPopup = document.getElementById('actionPopup');
+        const actionPopupTitle = document.getElementById('actionPopupTitle');
+        const viewVocabBtn = document.getElementById('viewVocabBtn');
+        const startQuizBtn = document.getElementById('startQuizBtn');
+        const closeActionPopup = document.getElementById('closeActionPopup');
+        const vocabPopup = document.getElementById('vocabPopup');
+        const vocabPopupTitle = document.getElementById('vocabPopupTitle');
+        const vocabListContainer = document.getElementById('vocabListContainer');
+        const closeVocabPopup = document.getElementById('closeVocabPopup');
+        const quizErrorPopup = document.getElementById('quizErrorPopup');
+        const quizErrorMessage = document.getElementById('quizErrorMessage');
+        const closeQuizErrorPopup = document.getElementById('closeQuizErrorPopup');
+        window.currentWeekTitle = '';
+
+        // --- GLOBAL POPUP HANDLERS ---
+        function showActionPopup(vocab, title) {
+            window.currentQuizVocabulary = vocab;
+            window.currentWeekTitle = title;
+            actionPopupTitle.textContent = `Bạn muốn làm gì với ${title}?`;
+            popupContainer.classList.remove('hidden');
+            actionPopup.classList.remove('hidden');
+            // Hide other popups
+            [welcomePopup, vocabPopup, wrongPopup, endPopup, quizErrorPopup].forEach(p => p.classList.add('hidden'));
+        }
+
+        function showVocabList() {
+            const vocabList = window.currentQuizVocabulary;
+            const title = window.currentWeekTitle;
+
+            vocabPopupTitle.textContent = `Từ vựng ${title}`;
+            vocabListContainer.innerHTML = '';
+
+            vocabList.forEach(item => {
+                const vocabItem = document.createElement('div');
+                vocabItem.className = 'p-2 border-b';
+                vocabItem.innerHTML = `<span class="font-bold text-pink-600">${item.en}</span>: <span class="text-gray-700">${item.vi}</span>`;
+                vocabListContainer.appendChild(vocabItem);
+            });
+            
+            actionPopup.classList.add('hidden');
+            vocabPopup.classList.remove('hidden');
+        }
+
+        function showQuizErrorPopup(message) {
+            quizErrorMessage.textContent = message;
+            popupContainer.classList.remove('hidden');
+            quizErrorPopup.classList.remove('hidden');
+             [welcomePopup, vocabPopup, wrongPopup, endPopup, actionPopup].forEach(p => p.classList.add('hidden'));
+        }
+
+        // --- INITIALIZE SECTIONS ---
+        initializeWeekSelection(weeklyVocabularies, showActionPopup);
+        initializeQuiz(showQuizErrorPopup);
+
+        // --- GLOBAL EVENT LISTENERS ---
+        closeWelcomeBtn.addEventListener('click', () => {
+            popupContainer.classList.add('hidden');
+            welcomePopup.classList.add('hidden');
+        });
+        viewVocabBtn.addEventListener('click', showVocabList);
+        startQuizBtn.addEventListener('click', () => {
+            popupContainer.classList.add('hidden');
+            actionPopup.classList.add('hidden');
+            window.startQuiz();
+        });
+        closeActionPopup.addEventListener('click', () => {
+            popupContainer.classList.add('hidden');
+            actionPopup.classList.add('hidden');
+        });
+        closeVocabPopup.addEventListener('click', () => {
+            popupContainer.classList.add('hidden');
+            vocabPopup.classList.add('hidden');
+        });
+        closeQuizErrorPopup.addEventListener('click', () => {
+            popupContainer.classList.add('hidden');
+            quizErrorPopup.classList.add('hidden');
+        });
 
         // Show welcome popup on first load
-        document.getElementById('welcomePopup').classList.remove('hidden');
-        document.getElementById('quizPopupContainer').classList.remove('hidden');
+        welcomePopup.classList.remove('hidden');
+        popupContainer.classList.remove('hidden');
     });
 
-    function initializeWeekSelection(weeklyVocabularies) {
+    function initializeWeekSelection(weeklyVocabularies, showActionPopup) {
         const weekGrid = document.getElementById('weekGrid');
-        const weekSelectionScreen = document.getElementById('weekSelectionScreen');
-        const quizPage = document.getElementById('quizPage');
-        let quizVocab = [];
 
         for (let i = 0; i < 10; i++) {
             const weekBtn = document.createElement('button');
             weekBtn.textContent = `Tuần ${i + 1}`;
             weekBtn.className = 'week-btn bg-pink-500 text-white font-bold py-4 px-2 rounded-lg text-lg';
             weekBtn.onclick = () => {
-                quizVocab = weeklyVocabularies[i];
-                window.currentQuizVocabulary = quizVocab; // Pass vocab to global scope for the quiz
-                window.startQuiz();
+                showActionPopup(weeklyVocabularies[i], `Tuần ${i + 1}`);
             };
             weekGrid.appendChild(weekBtn);
 
@@ -197,9 +291,8 @@
                 monthTestBtn.textContent = `Kiểm tra Tháng ${ (i + 1) / 5 } (Tuần ${startWeek + 1}-${endWeek + 1})`;
                 monthTestBtn.className = 'month-btn bg-purple-600 text-white font-bold py-4 rounded-lg text-lg col-span-2 sm:col-span-3 md:col-span-5';
                 monthTestBtn.onclick = () => {
-                    quizVocab = weeklyVocabularies.slice(startWeek, endWeek + 1).flat();
-                    window.currentQuizVocabulary = quizVocab;
-                    window.startQuiz();
+                    const vocab = weeklyVocabularies.slice(startWeek, endWeek + 1).flat();
+                    showActionPopup(vocab, `Tháng ${(i + 1) / 5}`);
                 };
                 weekGrid.appendChild(monthTestBtn);
             }
@@ -207,7 +300,7 @@
     }
 
 
-    function initializeQuiz() {
+    function initializeQuiz(showQuizErrorPopup) {
         let currentQuestions = [];
         let currentQuestionIndex = 0;
         let scoreCount = 0;
@@ -216,7 +309,6 @@
 
         const weekSelectionScreen = document.getElementById('weekSelectionScreen');
         const quizPage = document.getElementById('quizPage');
-        const quizScreenContent = document.getElementById('quizScreenContent');
         const backToWeeksBtn = document.getElementById('backToWeeksBtn');
         
         const progress = document.getElementById('progress');
@@ -227,40 +319,19 @@
 
         const popupContainer = document.getElementById('quizPopupContainer');
         const welcomePopup = document.getElementById('welcomePopup');
-        const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
-        
         const wrongPopup = document.getElementById('wrongPopup');
-        const speakWrongBtn = document.getElementById('speakWrongBtn');
         const closeWrongPopup = document.getElementById('closeWrongPopup');
-
+        const speakWrongBtn = document.getElementById('speakWrongBtn');
         const endPopup = document.getElementById('endPopup');
         const replayBtn = document.getElementById('replayBtn');
         const homeBtn = document.getElementById('homeBtn');
-
-        const quizErrorPopup = document.getElementById('quizErrorPopup');
-        const quizErrorMessage = document.getElementById('quizErrorMessage');
-        const closeQuizErrorPopup = document.getElementById('closeQuizErrorPopup');
 
         speakBtn.addEventListener('click', () => {
             if (questionEl.textContent) {
                 speak(questionEl.textContent);
             }
         });
-
-        function showQuizErrorPopup(message) {
-            quizErrorMessage.textContent = message;
-            popupContainer.classList.remove('hidden');
-            quizErrorPopup.classList.remove('hidden');
-            welcomePopup.classList.add('hidden');
-            wrongPopup.classList.add('hidden');
-            endPopup.classList.add('hidden');
-        }
-
-        closeQuizErrorPopup.addEventListener('click', () => {
-            popupContainer.classList.add('hidden');
-            quizErrorPopup.classList.add('hidden');
-        });
-
+       
         function loadVoices() {
             const voices = synth.getVoices();
             femaleVoice = voices.find(voice => voice.name === 'Google US English' && voice.lang === 'en-US');
@@ -309,7 +380,6 @@
                  goToHome();
                  return;
             }
-
 
             displayQuestion();
         }
@@ -410,21 +480,12 @@
 
         function goToHome() {
             popupContainer.classList.add('hidden');
-            welcomePopup.classList.add('hidden');
-            wrongPopup.classList.add('hidden');
-            endPopup.classList.add('hidden');
-            quizErrorPopup.classList.add('hidden');
+            [welcomePopup, wrongPopup, endPopup, quizErrorPopup, actionPopup, vocabPopup].forEach(p => p.classList.add('hidden'));
             
             quizPage.classList.add('hidden');
             weekSelectionScreen.classList.remove('hidden');
         }
         
-        
-        closeWelcomeBtn.addEventListener('click', () => {
-            popupContainer.classList.add('hidden');
-            welcomePopup.classList.add('hidden');
-        });
-
         closeWrongPopup.addEventListener('click', () => {
             popupContainer.classList.add('hidden');
             wrongPopup.classList.add('hidden');
