@@ -167,6 +167,27 @@
                 modal.classList.add('hidden');
             }
         });
+
+        const welcomeModal = document.getElementById('welcome-modal');
+        const okWelcomeBtn = document.getElementById('ok-welcome-btn');
+
+        const hideWelcomeModal = () => {
+            if (!welcomeModal) return;
+
+            // Lắng nghe sự kiện khi hiệu ứng transition kết thúc, sau đó mới ẩn popup.
+            // { once: true } đảm bảo listener sẽ tự động bị xóa sau khi chạy 1 lần.
+            welcomeModal.addEventListener('transitionend', () => {
+                welcomeModal.classList.add('hidden');
+            }, { once: true });
+
+            // Bắt đầu hiệu ứng mờ dần bằng cách đổi opacity về 0.
+            welcomeModal.style.opacity = '0';
+        };
+        
+        if (okWelcomeBtn) {
+            okWelcomeBtn.addEventListener('click', hideWelcomeModal);
+        }
+        
     </script>
 
 </body>
