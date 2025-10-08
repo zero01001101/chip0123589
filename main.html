@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ứng Dụng Học Từ Vựng</title>
+    <title>Trắc Nghiệm Từ Vựng Theo Tuần</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Mammoth.js for reading .docx -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,30 +20,6 @@
         }
         .hidden {
             display: none;
-        }
-
-        /* Login Page Ripple Effect */
-        #loginPage button {
-            position: relative;
-            overflow: hidden;
-        }
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.6);
-            transform: scale(0);
-            animation: ripple-effect 0.6s linear;
-        }
-        @keyframes ripple-effect {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-
-        /* Admin Page Drag & Drop Styles */
-        .drag-over {
-            @apply border-pink-400 bg-pink-100;
         }
 
         /* Quiz Page Animations */
@@ -67,96 +41,38 @@
             from { transform: scale(0.7); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
+        .week-btn, .month-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .week-btn:hover, .month-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body class="bg-pink-100 flex items-center justify-center min-h-screen p-4">
 
     <!-- =================================================================
-         LOGIN PAGE
+         WEEK SELECTION SCREEN
     ================================================================== -->
-    <div id="loginPage" class="w-full max-w-sm">
-        <form id="loginForm" class="bg-white shadow-lg rounded-xl px-8 pt-6 pb-8 mb-4">
-            <h1 class="text-2xl font-bold text-center text-pink-600 mb-6">Đăng Nhập</h1>
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="username">Tên người dùng</label>
-                <input class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-pink-500" id="username" type="text">
-            </div>
-            <div class="mb-6">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="password">Mật khẩu</label>
-                <input class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline focus:border-pink-500" id="password" type="password">
-            </div>
-            <div class="flex items-center justify-center">
-                <button class="bg-pink-500 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline w-full transition duration-300" type="submit">Đăng Nhập</button>
-            </div>
-        </form>
-        <!-- Login Popup -->
-        <div id="loginPopupOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div class="bg-pink-500 text-white p-6 rounded-lg shadow-xl text-center max-w-sm w-full">
-                <p id="loginPopupMessage" class="mb-4 text-lg"></p>
-                <button id="closeLoginPopupButton" class="bg-pink-700 hover:bg-pink-800 text-white font-bold py-2 px-6 rounded-lg">Thử lại</button>
-            </div>
+    <div id="weekSelectionScreen" class="w-full max-w-4xl mx-auto text-center bg-white p-8 rounded-2xl shadow-lg">
+        <h1 class="text-4xl font-bold mb-2 text-pink-700 mali-font">Học Từ Vựng Theo Tuần</h1>
+        <p class="text-gray-600 mb-8">Chọn một tuần để bắt đầu học hoặc làm bài kiểm tra tháng.</p>
+        
+        <div id="weekGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            <!-- JS will generate buttons here -->
         </div>
     </div>
 
-    <!-- =================================================================
-         ADMIN PAGE (Read File & Generate Quiz)
-    ================================================================== -->
-    <div id="adminPage" class="hidden container mx-auto p-6 bg-white rounded-2xl shadow-xl max-w-4xl">
-        <header class="text-center mb-6 flex justify-between items-center">
-            <div></div> <!-- Spacer -->
-            <h1 class="text-4xl font-bold text-pink-500">Tạo Đề Mặc Định</h1>
-            <button id="adminLogoutBtn" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Đăng xuất</button>
-        </header>
-        <main>
-            <div id="drop-zone" class="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-300 text-center transition-colors duration-200">
-                <p class="text-gray-500 mb-4">Kéo và thả file Word (.docx) vào đây, hoặc</p>
-                <label for="file-input" class="bg-pink-400 text-white font-bold py-2 px-4 rounded-xl hover:bg-pink-500 transition-colors cursor-pointer">Chọn File</label>
-                <input type="file" id="file-input" class="hidden" accept=".docx" multiple>
-                <div id="file-chosen" class="mt-4 text-gray-600">Chưa có file nào được chọn</div>
-            </div>
-            <div id="actions-container" class="text-center my-6 space-x-4">
-                <button id="preview-btn" class="text-lg px-8 py-3 bg-pink-400 text-white font-bold rounded-xl hover:bg-pink-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Xem Trước Đề</button>
-                <button id="save-btn" class="hidden text-lg px-8 py-3 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-colors">Lưu Làm Đề Mặc Định</button>
-            </div>
-            <div id="status" class="text-center text-pink-600 font-medium h-5 mb-4"></div>
-            <!-- Demo Container -->
-            <div id="demo-container" class="hidden grid md:grid-cols-2 gap-6 mt-6">
-                <div>
-                    <h2 class="text-2xl font-bold mb-3 text-pink-600">Bản xem trước Đề</h2>
-                    <pre id="demo-quiz-output" class="bg-pink-50 p-4 rounded-lg h-96 overflow-auto whitespace-pre-wrap break-words"></pre>
-                </div>
-                <div>
-                    <h2 class="text-2xl font-bold mb-3 text-pink-600">Bản xem trước Đáp Án</h2>
-                    <pre id="demo-answers-output" class="bg-pink-50 p-4 rounded-lg h-96 overflow-auto whitespace-pre-wrap break-words"></pre>
-                </div>
-            </div>
-        </main>
-         <!-- Admin Popup -->
-        <div id="adminPopupOverlay" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50">
-            <div class="popup-animate bg-white p-8 rounded-2xl shadow-lg text-center max-w-sm">
-                <p id="adminPopupMessage" class="mb-6 text-lg text-gray-700"></p>
-                <button id="adminPopupCloseBtn" class="bg-pink-400 text-white font-bold py-2 px-6 rounded-xl hover:bg-pink-500">Đã hiểu</button>
-            </div>
-        </div>
-    </div>
 
     <!-- =================================================================
          QUIZ PAGE (Do Exercises)
     ================================================================== -->
     <div id="quizPage" class="hidden w-full max-w-2xl mx-auto">
-        <!-- Start Screen -->
-        <div id="startScreen" class="text-center bg-pink-100 p-8 rounded-2xl shadow-lg">
-             <div class="text-right mb-4">
-                 <button id="quizLogoutBtn" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors text-sm">Đăng xuất</button>
-            </div>
-            <h1 class="text-4xl font-bold mb-2 text-pink-700 mali-font">Trắc nghiệm Từ vựng</h1>
-            <p id="currentDate" class="text-gray-500 mb-4"></p>
-            <p class="text-gray-600 mb-8">Số lần làm bài hôm nay: <span id="playCount" class="font-bold text-pink-600">0</span></p>
-            <button id="startBtn" class="bg-pink-500 text-white font-bold py-3 px-8 rounded-full hover:bg-pink-600 transition-transform transform hover:scale-105 text-lg">Bắt đầu!</button>
-        </div>
         <!-- Quiz Screen -->
-        <div id="quizScreenContent" class="hidden bg-pink-100 p-6 sm:p-8 rounded-2xl shadow-lg">
+        <div id="quizScreenContent" class="bg-pink-100 p-6 sm:p-8 rounded-2xl shadow-lg">
             <div class="flex justify-between items-center mb-6">
+                 <button id="backToWeeksBtn" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors text-sm">&lt; Chọn Tuần</button>
                 <div id="progress" class="text-lg font-bold text-pink-700">Câu 1/10</div>
                 <div id="score" class="text-lg font-bold text-pink-700">Điểm: 0</div>
             </div>
@@ -168,343 +84,140 @@
             </div>
             <div id="answers" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
         </div>
-        <!-- Quiz Popups Container -->
-        <div id="quizPopupContainer" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-            <!-- Welcome -->
-            <div id="welcomePopup" class="popup-animate bg-pink-100 p-8 rounded-2xl shadow-lg text-center w-full max-w-sm hidden">
-                <div class="w-24 h-24 mx-auto mb-4 text-pink-300 flex items-center justify-center">
-                     <svg class="w-full h-full heartbeat" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
-                </div>
-                <h3 class="text-2xl font-bold text-pink-700 mb-4 mali-font">Chíp đáng yêu học vui vẻ!</h3>
-                <p class="text-gray-600 mb-6">Yêu chíp nhiều! &lt;3</p>
-                <button id="closeWelcomeBtn" class="bg-pink-500 text-white font-bold py-2 px-8 rounded-full hover:bg-pink-600">Học thôi nào!</button>
+    </div>
+        
+    <!-- =================================================================
+         POPUPS CONTAINER
+    ================================================================== -->
+    <div id="quizPopupContainer" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <!-- Welcome -->
+        <div id="welcomePopup" class="popup-animate bg-pink-100 p-8 rounded-2xl shadow-lg text-center w-full max-w-sm hidden">
+            <div class="w-24 h-24 mx-auto mb-4 text-pink-300 flex items-center justify-center">
+                 <svg class="w-full h-full heartbeat" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
             </div>
-            <!-- Wrong Answer -->
-            <div id="wrongPopup" class="popup-animate bg-white p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm hidden">
-                <h3 class="text-2xl font-bold text-red-500 mb-4 mali-font">Sai rồi!</h3>
-                <p class="text-gray-700 mb-4">
-                    Đáp án "<span id="wrongAnswerText" class="font-bold"></span>" có nghĩa là <span id="wrongAnswerInEnglish" class="font-bold text-red-600"></span>
-                    <button id="speakWrongBtn" class="ml-1 inline-block align-middle text-red-500 hover:text-red-700">
-                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.383-.217zM14.657 2.929a1 1 0 011.414 0A9 9 0 0119 10a9 9 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7 7 0 0017 10a7 7 0 00-2.343-5.657 1 1 0 010-1.414zm-2.828 2.828a1 1 0 011.414 0A5 5 0 0115 10a5 5 0 01-1.757 3.536 1 1 0 11-1.414-1.414A3 3 0 0013 10a3 3 0 00-.879-2.121 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                    </button>
-                </p>
-                <button id="closeWrongPopup" class="bg-pink-500 text-white font-bold px-6 py-2 rounded-lg">Câu hỏi tiếp theo nào Chíp!</button>
-            </div>
-            <!-- End Game -->
-            <div id="endPopup" class="popup-animate p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm hidden">
-                 <div id="heartContainer" class="hidden relative w-24 h-24 mx-auto mb-4"><div class="heartbeat absolute text-8xl text-pink-400">❤️</div></div>
-                 <h3 id="endTitle" class="text-3xl font-bold mb-2 mali-font"></h3>
-                 <p id="endMessage" class="text-lg text-gray-200 mb-6"></p>
-                 <div class="flex flex-col sm:flex-row justify-center gap-4">
-                     <button id="replayBtn" class="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600">Làm lại</button>
-                     <button id="homeBtn" class="bg-pink-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-pink-600">Trang chủ</button>
-                 </div>
-            </div>
-             <!-- Quiz Error Popup -->
-            <div id="quizErrorPopup" class="popup-animate bg-yellow-500 text-white p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm hidden">
-                <h3 class="text-2xl font-bold mb-4 mali-font">Thông báo</h3>
-                <p id="quizErrorMessage" class="text-lg mb-6"></p>
-                <button id="closeQuizErrorPopup" class="bg-yellow-700 text-white font-bold px-6 py-2 rounded-lg">Đã hiểu</button>
-            </div>
+            <h3 class="text-2xl font-bold text-pink-700 mb-4 mali-font">Chíp đáng yêu học vui vẻ!</h3>
+            <p class="text-gray-600 mb-6">Yêu chíp nhiều! &lt;3</p>
+            <button id="closeWelcomeBtn" class="bg-pink-500 text-white font-bold py-2 px-8 rounded-full hover:bg-pink-600">Học thôi nào!</button>
+        </div>
+        <!-- Wrong Answer -->
+        <div id="wrongPopup" class="popup-animate bg-white p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm hidden">
+            <h3 class="text-2xl font-bold text-red-500 mb-4 mali-font">Sai rồi!</h3>
+            <p class="text-gray-700 mb-4">
+                Đáp án "<span id="wrongAnswerText" class="font-bold"></span>" có nghĩa là <span id="wrongAnswerInEnglish" class="font-bold text-red-600"></span>
+                <button id="speakWrongBtn" class="ml-1 inline-block align-middle text-red-500 hover:text-red-700">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.383-.217zM14.657 2.929a1 1 0 011.414 0A9 9 0 0119 10a9 9 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7 7 0 0017 10a7 7 0 00-2.343-5.657 1 1 0 010-1.414zm-2.828 2.828a1 1 0 011.414 0A5 5 0 0115 10a5 5 0 01-1.757 3.536 1 1 0 11-1.414-1.414A3 3 0 0013 10a3 3 0 00-.879-2.121 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                </button>
+            </p>
+            <button id="closeWrongPopup" class="bg-pink-500 text-white font-bold px-6 py-2 rounded-lg">Câu hỏi tiếp theo nào Chíp!</button>
+        </div>
+        <!-- End Game -->
+        <div id="endPopup" class="popup-animate p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm hidden">
+             <div id="heartContainer" class="hidden relative w-24 h-24 mx-auto mb-4"><div class="heartbeat absolute text-8xl text-pink-400">❤️</div></div>
+             <h3 id="endTitle" class="text-3xl font-bold mb-2 mali-font"></h3>
+             <p id="endMessage" class="text-lg text-gray-200 mb-6"></p>
+             <div class="flex flex-col sm:flex-row justify-center gap-4">
+                 <button id="replayBtn" class="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600">Làm lại</button>
+                 <button id="homeBtn" class="bg-pink-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-pink-600">Trang chủ</button>
+             </div>
+        </div>
+         <!-- Quiz Error Popup -->
+        <div id="quizErrorPopup" class="popup-animate bg-yellow-500 text-white p-6 rounded-xl shadow-lg text-center w-11/12 max-w-sm hidden">
+            <h3 class="text-2xl font-bold mb-4 mali-font">Thông báo</h3>
+            <p id="quizErrorMessage" class="text-lg mb-6"></p>
+            <button id="closeQuizErrorPopup" class="bg-yellow-700 text-white font-bold px-6 py-2 rounded-lg">Đã hiểu</button>
         </div>
     </div>
 
 
 <script>
-    // =================================================================
-    //                  GLOBAL INITIALIZATION
-    // =================================================================
     document.addEventListener('DOMContentLoaded', () => {
-        const initialDefaultVocabularyList = [
-            { en: 'teacher', vi: 'giáo viên' }, { en: 'doctor', vi: 'bác sĩ' }, { en: 'nurse', vi: 'y tá' }, 
-            { en: 'engineer', vi: 'kỹ sư' }, { en: 'worker', vi: 'công nhân' }, { en: 'farmer', vi: 'nông dân' }, 
-            { en: 'driver', vi: 'tài xế' }, { en: 'student', vi: 'học sinh' }, { en: 'police officer', vi: 'cảnh sát' },
-            { en: 'singer', vi: 'ca sĩ' }
+        const allVocabulary = [
+            // TUẦN 1
+            { en: 'Foot', vi: 'Bàn chân' }, { en: 'Hand', vi: 'Bàn tay' }, { en: 'Calf', vi: 'Bắp chân' }, { en: 'Muscle', vi: 'Bắp thịt' }, { en: 'Stomach', vi: 'Bao tử' }, { en: 'Groin', vi: 'Bẹn, háng' }, { en: 'Belly', vi: 'Bụng' }, { en: 'Abdomen', vi: 'Bụng' }, { en: 'Head', vi: 'Cái đầu' }, { en: 'Skull', vi: 'Hộp sọ' }, { en: 'Scar', vi: 'Cái sẹo' }, { en: 'Arm', vi: 'Cánh tay' }, { en: 'Chin', vi: 'Cằm' }, { en: 'Neck', vi: 'Cổ' }, { en: 'Throat', vi: 'Cổ họng' }, { en: 'Leg', vi: 'Chân' }, { en: 'Elbow', vi: 'Cùi tay' }, { en: 'Figure', vi: 'Dáng người' }, { en: 'Penis', vi: 'Dương vật' }, { en: 'Skin', vi: 'Da' }, { en: 'Knee', vi: 'Đầu gối' }, { en: 'Artery', vi: 'Động mạch' }, { en: 'Knuckle', vi: 'Đốt ngón tay' }, { en: 'Thigh', vi: 'Đùi' }, { en: 'Crown', vi: 'Đỉnh đầu' }, { en: 'Waist', vi: 'Eo' }, { en: 'Nape', vi: 'Gáy' }, { en: 'Sinew', vi: 'Gân' }, { en: 'Liver', vi: 'Gan' }, { en: 'Hip', vi: 'Hông' }, { en: 'Jaw', vi: 'Hàm' }, { en: 'Anus', vi: 'Hậu môn' }, { en: 'Wind-pipe', vi: 'Khí quản' }, { en: 'Spleen', vi: 'Lá lách' }, { en: 'Eyebrow', vi: 'Lông mày' }, { en: 'Eyelashes', vi: 'Lông mi' }, { en: 'Nostril', vi: 'Lỗ mũi' }, { en: 'Side', vi: 'Lườn, sườn' }, { en: 'Tongue', vi: 'Lưỡi' }, { en: 'Back', vi: 'Lưng' }, { en: 'Dimple', vi: 'Lúm đồng tiền' }, { en: 'Cheek', vi: 'Má' }, { en: 'Blood', vi: 'Máu' }, { en: 'Lip', vi: 'Môi' }, { en: 'Buttock', vi: 'Mông' }, { en: 'Eye', vi: 'Mắt' }, { en: 'Ankle', vi: 'Mắt cá' }, { en: 'Pulse', vi: 'Mạch' }, { en: 'Sweat', vi: 'Mồ hôi' }, { en: 'Face', vi: 'Mặt' }, { en: 'Bile / gall', vi: 'Mật' }, { en: 'Mouth', vi: 'Miệng' }, { en: 'Nose', vi: 'Mũi' }, { en: 'Armpit', vi: 'Nách' }, { en: 'Fist', vi: 'Nắm tay' }, { en: 'Feature', vi: 'Nét mặt' }, { en: 'Mole', vi: 'Nốt ruồi' }, { en: 'Toe', vi: 'Ngón chân' }, { en: 'Finger', vi: 'Ngón tay' }, { en: 'Thorax/chest', vi: 'Ngực' }, { en: 'Philtrum', vi: 'Nhân trung' }, { en: 'Complexion', vi: 'Nước da' }, { en: 'Lung', vi: 'Phổi' }, { en: 'Tooth', vi: 'Răng' }, { en: 'Beard', vi: 'Râu cằm' }, { en: 'Moustache', vi: 'Râu mép' }, { en: 'Navel', vi: 'Rốn' }, { en: 'Large intestine', vi: 'Ruột già' }, { en: 'Small intestine', vi: 'Ruột non' }, { en: 'Hair', vi: 'Tóc' }, { en: 'Ear', vi: 'Tai' }, { en: 'Temple', vi: 'Thái dương' }, { en: 'Kidney', vi: 'Thận' }, { en: 'Flesh', vi: 'Thịt' }, { en: 'Heart', vi: 'Tim' }, { en: 'Marrow', vi: 'Tủy' }, { en: 'Forehead', vi: 'Trán' }, { en: 'Vein', vi: 'Tĩnh mạch' }, { en: 'Shoulder', vi: 'Vai' }, { en: 'Wrinkle', vi: 'Vết nhăn' }, { en: 'Cheekbone', vi: 'Xương gò má' }, { en: 'Rib', vi: 'Xương sườn' }, { en: 'Spine', vi: 'Xương sống' }, { en: 'Graceful', vi: 'Có duyên, phong nhã' }, { en: 'Bearded', vi: 'Có râu' }, { en: 'Tall', vi: 'Cao' }, { en: 'Long', vi: 'Dài' }, { en: 'Lovely', vi: 'Dễ mến' }, { en: 'Soft', vi: 'Dịu dàng' }, { en: 'Charming', vi: 'Duyên dáng' }, { en: 'Dark', vi: 'Đen' }, { en: 'Beautiful', vi: 'Đẹp' }, { en: 'Handsome', vi: 'Đẹp trai' }, { en: 'Fair', vi: 'Đẹp, trắng (da)' }, { en: 'Wavy', vi: 'Gợn sóng' }, { en: 'Oval', vi: 'Hình bầu dục' }, { en: 'Bald', vi: 'Hói' }, { en: 'Rosy', vi: 'Hồng' }, { en: 'Appealing', vi: 'Hấp dẫn, quyến rũ' }, { en: 'Hazel', vi: 'Hung' }, { en: 'Sturdy / lusty', vi: 'Khỏe mạnh' }, { en: 'Squint', vi: 'Lác mắt, lé' }, { en: 'Sparse', vi: 'Lưa thưa' }, { en: 'Stunning', vi: 'Lộng lẫy, tuyệt vời' }, { en: 'Well-built', vi: 'Lực lưỡng, cường tráng' }, { en: 'Slim', vi: 'Mảnh mai' }, { en: 'Fat', vi: 'Mập' }, { en: 'Brown', vi: 'Nâu' }, { en: 'Heavy', vi: 'Nặng' }, { en: 'Short', vi: 'Ngắn' }, { en: 'Pointed', vi: 'Nhọn' }, { en: 'Pale', vi: 'Nhợt nhạt' }, { en: 'Light', vi: 'Nhẹ' }, { en: 'Hooked', vi: 'Quắp (mũi)' }, { en: 'Attractive', vi: 'Quyến rũ' }, { en: 'Intelligent', vi: 'Thông minh' }, { en: 'Clever', vi: 'Thông minh, khéo léo' }, { en: 'Straight', vi: 'Thẳng' }, { en: 'Smart', vi: 'Thanh nhã, lịch sự' }, { en: 'Big', vi: 'To, mập' }, { en: 'Round', vi: 'Tròn' }, { en: 'Blond', vi: 'Vàng hoe' }, { en: 'Square', vi: 'Vuông' }, { en: 'Ugly', vi: 'Xấu xí' }, { en: 'Pretty', vi: 'Xinh đẹp' }, { en: 'Nice', vi: 'Xinh đẹp, tử tế' }, { en: 'Curly', vi: 'Xoăn' }, { en: 'Slanting', vi: 'Xếch' }, { en: 'Step', vi: 'Bước' }, { en: 'Hold', vi: 'Cầm, nắm' }, { en: 'Laugh', vi: 'Cười lớn' }, { en: 'Run', vi: 'Chạy' }, { en: 'Catch', vi: 'Chụp, bắt' }, { en: 'Walk', vi: 'Đi' }, { en: 'Nod', vi: 'Gật (đầu)' }, { en: 'Listen (to)', vi: 'Lắng nghe' }, { en: 'Dash', vi: 'Lao tới' }, { en: 'Smile', vi: 'Mỉm cười' }, { en: 'Clasp', vi: 'Nắm chặt' }, { en: 'Talk', vi: 'Nói' }, { en: 'Hear', vi: 'Nghe' }, { en: 'Smell', vi: 'Ngửi' }, { en: 'Look', vi: 'Nhìn' },
+            // TUẦN 2
+            { en: 'Spring', vi: 'Nhảy' }, { en: 'Hop', vi: 'Nhảy lò cò' }, { en: 'Skip', vi: 'Nhảy, nhảy dây' }, { en: 'Chew', vi: 'Nhai' }, { en: 'Taste', vi: 'Nếm' }, { en: 'Swallow', vi: 'Nuốt' }, { en: 'Grip', vi: 'Ôm chặt' }, { en: 'Kneel', vi: 'Quỳ' }, { en: 'Live', vi: 'Sống' }, { en: 'Whisper', vi: 'Thì thầm' }, { en: 'Breathe', vi: 'Thở' }, { en: 'See', vi: 'Thấy' }, { en: 'Digest', vi: 'Tiêu hóa' }, { en: 'Grasp', vi: 'Túm, nắm' }, { en: 'Clap', vi: 'Vỗ tay' }, { en: 'Rush', vi: 'Xông lên, lao vào' }, { en: 'Allergic', vi: 'Dị ứng' }, { en: 'Anaemia', vi: 'Thiếu máu' }, { en: 'Appendicitis', vi: 'Viêm ruột thừa' }, { en: 'Asthma', vi: 'Suyễn' }, { en: 'Cancer', vi: 'Ung thư' }, { en: 'Cholera', vi: 'Thổ tả' }, { en: 'Cold', vi: 'Cảm lạnh' }, { en: 'Constipation', vi: 'Táo bón' }, { en: 'Convulsion', vi: 'Co giật' }, { en: 'Cough', vi: 'Ho' }, { en: 'Dermatitis', vi: 'Viêm da' }, { en: 'Diabetes', vi: 'Tiểu đường' }, { en: 'Diarrhoea', vi: 'Tiêu chảy' }, { en: 'Disease', vi: 'Căn bệnh, bệnh tật' }, { en: 'Flu/influenza', vi: 'Cúm' }, { en: 'Food poisoning', vi: 'Ngộ độc thực phẩm' }, { en: 'Haemorrhage', vi: 'Bệnh xuất huyết' }, { en: 'Haemorrhagic fever', vi: 'Sốt xuất huyết' }, { en: 'Headache', vi: 'Nhức đầu' }, { en: 'Heart attack', vi: 'Đau tim' }, { en: 'High blood pressure', vi: 'Cao huyết áp' }, { en: 'Hypertension', vi: 'Tăng huyết áp' }, { en: 'Indigestion', vi: 'Ăn không tiêu' }, { en: 'Insomnia', vi: 'Mất ngủ' }, { en: 'Itch', vi: 'Ngứa' }, { en: 'Leprosy', vi: 'Bệnh phong' }, { en: 'Lumbago', vi: 'Đau lưng' }, { en: 'Malaria', vi: 'Sốt rét' }, { en: 'Measles', vi: 'Bệnh sởi' }, { en: 'Mumps', vi: 'Quai bị' }, { en: 'Myopia', vi: 'Tật cận thị' }, { en: 'Neuralgia', vi: 'Đau dây thần kinh' }, { en: 'Palsy', vi: 'Tê liệt' }, { en: 'Pest', vi: 'Dịch hạch' }, { en: 'Presbyopia', vi: 'Viễn thị' }, { en: 'Rheumatism', vi: 'Thấp khớp' }, { en: 'Scabies', vi: 'Ghẻ' }, { en: 'Sea sickness', vi: 'Say sóng' }, { en: 'Short-sighted', vi: 'Cận thị' }, { en: 'Small pox', vi: 'Đậu mùa' }, { en: 'Sorethroat', vi: 'Đau họng' }, { en: 'Sprain', vi: 'Bong gân' }, { en: 'Syphilis', vi: 'Giang mai' }, { en: 'Tetanus', vi: 'Uốn ván' }, { en: 'Toothache', vi: 'Đau răng' }, { en: 'Trachoma', vi: 'Đau mắt hột' }, { en: 'Tuberculosis', vi: 'Bệnh lao' }, { en: 'Typhoid fever', vi: 'Sốt thương hàn' }, { en: 'Vomitting', vi: 'Nôn mửa' }, { en: 'Whooping cough', vi: 'Ho gà' }, { en: 'Yellow fever', vi: 'Sốt rét da vàng' }, { en: 'Bandage', vi: 'Băng' }, { en: 'Car accident', vi: 'Tai nạn xe hơi' }, { en: 'Coma position', vi: 'Tư thế bị hôn mê' }, { en: 'Emergency', vi: 'Cấp cứu' }, { en: 'First aid kit', vi: 'Bộ dụng cụ sơ cứu' }, { en: 'Helper', vi: 'Người sơ cứu' }, { en: 'Hose', vi: 'Vòi cao su' }, { en: 'Ladder', vi: 'Thang' }, { en: 'Paramedic', vi: 'Phụ tá bác sĩ' }, { en: 'Pillow', vi: 'Gối' }, { en: 'Police officer', vi: 'Cảnh sát, công an' }, { en: 'Police station', vi: 'Đồn cảnh sát' }, { en: 'Rescuer', vi: 'Nhân viên cứu hộ' }, { en: 'Rope', vi: 'Dây thừng' }, { en: 'Splint', vi: 'Nẹp' }, { en: 'Stretcher', vi: 'Cáng, băng ca' }, { en: 'Wound', vi: 'Vết thương' }, { en: 'Oesophagus', vi: 'Thực quản' }, { en: 'Rectum', vi: 'Trực tràng' }, { en: 'Alveolus', vi: 'Phế nang' }, { en: 'Bronchial tube', vi: 'Phế quản' }, { en: 'Capillary', vi: 'Ông mao quản' }, { en: 'Larynx', vi: 'Thanh quản' }, { en: 'Pharynx', vi: 'Hầu, họng' }, { en: 'Trachea', vi: 'Khí quản' }, { en: 'Aorta', vi: 'Động mạch chủ' }, { en: 'Blood vessel', vi: 'Mạch máu' }, { en: 'Cerebellum', vi: 'Tiểu não' }, { en: 'Cerebrum', vi: 'Đại não' }, { en: 'Spinal cord', vi: 'Tủy sống' }, { en: 'Bladder', vi: 'Bàng quang' }, { en: 'Urine', vi: 'Nước tiểu' }, { en: 'Adultery', vi: 'Ngoại tình' }, { en: 'Bestman', vi: 'Phù rể' }, { en: 'Bride', vi: 'Cô dâu' }, { en: 'Bridesmaid', vi: 'Phù dâu' }, { en: 'Celibacy', vi: 'Cảnh độc thân' }, { en: 'Couple', vi: 'Vợ chồng' }, { en: 'Date', vi: 'Sự hẹn hò' }, { en: 'Divorce', vi: 'Cuộc li hôn' }, { en: 'Dowry', vi: 'Của hồi môn' }, { en: 'Fiance', vi: 'Vị hôn phu' }, { en: 'Fiancee', vi: 'Vị hôn thê' }, { en: 'Groom/bridegroom', vi: 'Chú rể' }, { en: 'Honeymoon', vi: 'Tuần trăng mật' }, { en: 'Husband', vi: 'Chồng' }, { en: 'Love triangle', vi: 'Mối tình tay ba' }, { en: 'Lover', vi: 'Người tình' }, { en: 'Marriage ceremony', vi: 'Lễ cưới' }, { en: 'Matrimony', vi: 'Hôn nhân' }, { en: 'Spouse', vi: 'Chồng hoặc vợ' }, { en: 'Wedding anniversary', vi: 'Lễ kỷ niệm ngày cưới' }, { en: 'Wedding', vi: 'Đám cưới' }, { en: 'Wife', vi: 'Vợ' }, { en: 'Childless', vi: 'Không có con' }, { en: 'Divorced', vi: 'Đã li dị' }, { en: 'Faithful', vi: 'Chung thủy' }, { en: 'Flirtatious', vi: 'Lăng lơ' }, { en: 'Jealous', vi: 'Ghen tuông' },
+            // TUẦN 3
+            { en: 'Lovesick', vi: 'Thất tình' }, { en: 'Married', vi: 'Đã lập gia đình' }, { en: 'Separated', vi: 'Đã li thân' }, { en: 'Accept', vi: 'Nhận lời' }, { en: 'Engage/betroth', vi: 'Hứa hôn' }, { en: 'Fall in love', vi: 'Phải lòng' }, { en: 'Flirt', vi: 'Tán tỉnh' }, { en: 'Love', vi: 'Yêu' }, { en: 'Marry/wed', vi: 'Cưới' }, { en: 'Propose marriage', vi: 'Cầu hôn (với)' }, { en: 'Remarry', vi: 'Tái hôn' }, { en: 'Separate', vi: 'Li thân' }, { en: 'Aunt', vi: 'Cô, dì, thím, mợ' }, { en: 'Bachelor', vi: 'Người đàn ông chưa vợ' }, { en: 'Brother', vi: 'Anh em trai' }, { en: 'Children', vi: 'Con cái' }, { en: 'Cousin', vi: 'Anh chị em họ' }, { en: 'Daughter', vi: 'Con gái' }, { en: 'Father', vi: 'Cha, bố' }, { en: 'Folks', vi: 'Họ hàng thân thuộc' }, { en: 'Forefather', vi: 'Tổ tiên, ông bà' }, { en: 'Foster-children', vi: 'Con nuôi' }, { en: 'Goddparents', vi: 'Bố mẹ đỡ đầu' }, { en: 'Grand-children', vi: 'Cháu' }, { en: 'Grandmother', vi: 'Bà (nội, ngoại)' }, { en: 'Inheritance', vi: 'Của thừa kế' }, { en: 'Kin/kindred', vi: 'Bà con, họ hàng' }, { en: 'Mother', vi: 'Mẹ' }, { en: 'Nephew', vi: 'Cháu trai' }, { en: 'Niece', vi: 'Cháu gái' }, { en: 'Orphan', vi: 'Trẻ mồ côi' }, { en: 'Parents', vi: 'Bố mẹ' }, { en: 'Relative', vi: 'Bà con' }, { en: 'Sibling', vi: 'Anh (chị em) ruột' }, { en: 'Sister', vi: 'Chị em gái' }, { en: 'Son', vi: 'Con trai' }, { en: 'Spinster', vi: 'Người đàn bà không chồng' }, { en: 'Stepchild', vi: 'Con riêng' }, { en: 'Twin', vi: 'Con sinh đôi' }, { en: 'Uncle', vi: 'Chú, bác, dượng, cậu' }, { en: 'Widow', vi: 'Người đàn bà góa chồng' }, { en: 'Widower', vi: 'Người đàn ông góa vợ' }, { en: 'Abandoned', vi: 'Bị ruồng bỏ' }, { en: 'Dishonest', vi: 'Bất lương' }, { en: 'Dutiful', vi: 'Có hiếu' }, { en: 'Fatherless', vi: 'Mồ côi cha' }, { en: 'Grateful', vi: 'Biết ơn' }, { en: 'Homeless', vi: 'Vô gia cư' }, { en: 'Honest', vi: 'Lương thiện' }, { en: 'Ill-bred', vi: 'Mất dạy' }, { en: 'Impolite', vi: 'Vô lễ' }, { en: 'Kindred', vi: 'Cùng họ hàng' }, { en: 'Motherless', vi: 'Mồ côi mẹ' }, { en: 'Polite (to)', vi: 'Lễ phép (với)' }, { en: 'Reputable', vi: 'Có danh giá' }, { en: 'Ungrateful', vi: 'Vô ơn' }, { en: 'Well-bred', vi: 'Có giáo dục' }, { en: 'Breed', vi: 'Nuôi nấng, giáo dục' }, { en: 'Disgrace', vi: 'Ghét bỏ' }, { en: 'Disobey', vi: 'Không vâng lời' }, { en: 'Esteem', vi: 'Kính mến, quý trọng' }, { en: 'Fondle', vi: 'Vuốt ve, âu yếm' }, { en: 'Forbid', vi: 'Cấm đoán' }, { en: 'Forgive', vi: 'Tha thứ' }, { en: 'Honour', vi: 'Tôn kính' }, { en: 'Bake', vi: 'Nướng bằng lò' }, { en: 'Blend', vi: 'Hòa, xay' }, { en: 'Boil', vi: 'Đun sôi, luộc' }, { en: 'Bone', vi: 'Lọc xương' }, { en: 'Chop', vi: 'Xắt nhỏ, băm nhỏ' }, { en: 'Crush', vi: 'Ép, vắt, nghiền' }, { en: 'Drain', vi: 'Làm ráo nước' }, { en: 'Fry', vi: 'Rán, chiên' }, { en: 'Grill', vi: 'Nướng' }, { en: 'Knead', vi: 'Nhào bột' }, { en: 'Marinate', vi: 'Ướp' }, { en: 'Mix', vi: 'Trộn' }, { en: 'Peel', vi: 'Gọt vỏ, lột vỏ' }, { en: 'Roast', vi: 'Quay' }, { en: 'Simmer', vi: 'Ninh' }, { en: 'Slice', vi: 'Xắt mỏng' }, { en: 'Soak', vi: 'Ngâm nước' }, { en: 'Spread', vi: 'Phết, trét' }, { en: 'Steam', vi: 'Hấp' }, { en: 'Stew', vi: 'Hầm' }, { en: 'Stir fry', vi: 'Xào' }, { en: 'Stir', vi: 'Khuấy, đảo' }, { en: 'Milk tea', vi: 'Trà sữa' }, { en: 'Black tea', vi: 'Hồng trà' }, { en: 'Green milk tea', vi: 'Trà sữa xanh' }, { en: 'Mango tea', vi: 'Trà xoài' }, { en: 'Red bean milk tea', vi: 'Trà sữa đậu đỏ' }, { en: 'Cheese cream', vi: 'Kem phô mai' }, { en: 'Grass jelly', vi: 'Sương sáo' }, { en: 'Ice', vi: 'Đá' }, { en: 'Pudding', vi: 'Thạch pudding' }, { en: 'Red beans', vi: 'Đậu đỏ' }, { en: 'Sugar', vi: 'Đường' },
+            // TUẦN 4
+            { en: 'Bacon', vi: 'Thịt xông khói' }, { en: 'Beef', vi: 'Thịt bò' }, { en: 'Chicken', vi: 'Thịt gà' }, { en: 'Chinese sausage', vi: 'Lạp xưởng' }, { en: 'Goat', vi: 'Thịt dê' }, { en: 'Ham', vi: 'Giăm bông' }, { en: 'Lamb', vi: 'Thịt cừu' }, { en: 'Lard', vi: 'Mỡ heo' }, { en: 'Lean meat', vi: 'Thịt nạc' }, { en: 'Meat', vi: 'Thịt' }, { en: 'Meat ball', vi: 'Thịt viên' }, { en: 'Mutton', vi: 'Thịt cừu' }, { en: 'Pork', vi: 'Thịt heo' }, { en: 'Quail', vi: 'Chim cút' }, { en: 'Ribs', vi: 'Sườn' }, { en: 'Sausage', vi: 'Xúc xích' }, { en: 'Veal', vi: 'Thịt bê' }, { en: 'Venison', vi: 'Thịt nai' }, { en: 'Wild boar', vi: 'Thịt heo rừng' }, { en: 'Crispy Vietnamese spring rolls', vi: 'Chả giò' }, { en: 'Summer rolls', vi: 'Gỏi cuốn' }, { en: 'Lotus delight salad', vi: 'Gỏi ngó sen tôm thịt' }, { en: 'Seafood delight salad', vi: 'Gỏi hải sản' }, { en: 'Shrimp and pork salad', vi: 'Gỏi tôm thịt' }, { en: 'Charcoal grilled pork noodles', vi: 'Bún thịt nướng' }, { en: 'Fresh - water crab soup', vi: 'Bún riêu cua' }, { en: 'Hue style beef noodles', vi: 'Bún bò Huế' }, { en: 'Noodle soup with meat balls', vi: 'Phở bò viên' }, { en: 'Noodle soup with sliced - chicken', vi: 'Phở gà' }, { en: 'Quang noodles', vi: 'Mỳ Quảng' }, { en: 'Rice noodle soup with beef', vi: 'Phở bò' }, { en: 'Pancake', vi: 'Bánh xèo' }, { en: 'Round sticky rice cake', vi: 'Bánh dày' }, { en: 'Shrimp in batter', vi: 'Bánh tôm' }, { en: 'Soya cake', vi: 'Bánh đậu' }, { en: 'Steamed wheat flour cake', vi: 'Bánh bao' }, { en: 'Stuffed pancake', vi: 'Bánh cuốn' }, { en: 'Stuffed sticky rice balls', vi: 'Bánh trôi nước' }, { en: 'Stuffed sticky rice cake', vi: 'Bánh chưng' }, { en: 'Young rice cake', vi: 'Bánh cốm' }, { en: 'Fried rice', vi: 'Cơm chiên' }, { en: 'Yangzhou fried rice', vi: 'Cơm chiên Dương Châu' }, { en: 'Boiled fertilized duck egg', vi: 'Hột vịt lộn' }, { en: 'Cabbage pickles', vi: 'Dưa cải' }, { en: 'Chicken fried with citronella', vi: 'Gà xào sả ớt' }, { en: 'Fish cooked with fishsauce bowl', vi: 'Cá kho tộ' }, { en: 'Hot pot', vi: 'Lẩu' }, { en: 'Onion pickles', vi: 'Dưa hành' }, { en: 'Salted vegetables', vi: 'Dưa muối' }, { en: 'Steamed sticky rice', vi: 'Xôi' }, { en: 'Sweet and sour fish broth', vi: 'Canh chua' }, { en: 'Sweet and sour pork ribs', vi: 'Sườn xào chua ngọt' }, { en: 'Tofu', vi: 'Đậu phụ (đậu hủ)' }, { en: 'Fish sauce', vi: 'Nước mắm' }, { en: 'Soya cheese', vi: 'Chao' }, { en: 'Black beans sweet gruel', vi: 'Chè đậu đen' }, { en: 'Green beans sweet gruel', vi: 'Chè đậu xanh' }, { en: 'Red beans sweet gruel', vi: 'Chè đậu đỏ' }, { en: 'Sweet banana with coconut gruel', vi: 'Chè chuối' }, { en: 'Sweet lotus seed gruel', vi: 'Chè hạt sen' }, { en: 'Thai sweet gruel', vi: 'Chè Thái' }, { en: 'Three colored sweet gruel', vi: 'Chè ba màu' }, { en: 'Apple', vi: 'Táo' }, { en: 'Apricot', vi: 'Mơ' }, { en: 'Avocado', vi: 'Bơ' }, { en: 'Banana', vi: 'Chuối' }, { en: 'Berry', vi: 'Dâu tằm' }, { en: 'Blueberry', vi: 'Việt quất' }, { en: 'Cherry', vi: 'Anh đào' }, { en: 'Chilli', vi: 'Ớt' }, { en: 'Coconut', vi: 'Dừa' }, { en: 'Cucumber', vi: 'Dưa chuột' }, { en: 'Custard-apple', vi: 'Na/ mãng cầu' }, { en: 'Durian', vi: 'Sầu riêng' }, { en: 'Fig', vi: 'Sung' }, { en: 'Grapefruit', vi: 'Bưởi' }, { en: 'Grapes', vi: 'Nho' }, { en: 'Guava', vi: 'Ổi' }, { en: 'Jackfruit', vi: 'Mít' }, { en: 'Jujube', vi: 'Táo ta' }, { en: 'Kiwi fruit', vi: 'Kiwi' }, { en: 'Kumquat', vi: 'Quất' }, { en: 'Lemon', vi: 'Chanh vàng' }, { en: 'Lime', vi: 'Chanh xanh' }, { en: 'Longan', vi: 'Nhãn' }, { en: 'Lychee', vi: 'Vải' }, { en: 'Mango', vi: 'Xoài' }, { en: 'Mangosteen', vi: 'Măng cụt' }, { en: 'Melon', vi: 'Dưa tây' }, { en: 'Olive', vi: 'Ô liu' }, { en: 'Orange', vi: 'Cam' }, { en: 'Papaya', vi: 'Đu đủ' }, { en: 'Peach', vi: 'Đào' }, { en: 'Pear', vi: 'Lê' }, { en: 'Persimmon', vi: 'Hồng' }, { en: 'Pineapple', vi: 'Dứa' }, { en: 'Plum', vi: 'Mận' }, { en: 'Pomegranate', vi: 'Lựu' }, { en: 'Rambutan', vi: 'Chôm chôm' }, { en: 'Raspberry', vi: 'Mâm xôi' }, { en: 'Starfruit', vi: 'Khế' }, { en: 'Strawberry', vi: 'Dâu tây' },
+            // TUẦN 5
+            { en: 'Tamarind', vi: 'Me' }, { en: 'Tangerine', vi: 'Quýt' }, { en: 'Tomato', vi: 'Cà chua' }, { en: 'Watermelon', vi: 'Dưa hấu' }, { en: 'Artichoke', vi: 'Atiso' }, { en: 'Asparagus', vi: 'Măng tây' }, { en: 'Beans', vi: 'Đậu' }, { en: 'Beetroot', vi: 'Củ dền' }, { en: 'Bell pepper', vi: 'Ớt chuông' }, { en: 'Broccoli', vi: 'Bông cải xanh' }, { en: 'Cabbage', vi: 'Bắp cải' }, { en: 'Carrot', vi: 'Cà rốt' }, { en: 'Cauliflower', vi: 'Súp lơ' }, { en: 'Celery', vi: 'Cần tây' }, { en: 'Coriander', vi: 'Rau mùi' }, { en: 'Corn', vi: 'Ngô (bắp)' }, { en: 'Eggplant', vi: 'Cà tím' }, { en: 'Fennel', vi: 'Thì là' }, { en: 'Garlic', vi: 'Tỏi' }, { en: 'Ginger', vi: 'Gừng' }, { en: 'Green onion', vi: 'Hành lá' }, { en: 'Kohlrabi', vi: 'Su hào' }, { en: 'Leek', vi: 'Tỏi tây' }, { en: 'Lettuce', vi: 'Rau diếp' }, { en: 'Lotus root', vi: 'Củ sen' }, { en: 'Marrow', vi: 'Bí xanh' }, { en: 'Mushroom', vi: 'Nấm' }, { en: 'Okra', vi: 'Đậu bắp' }, { en: 'Onion', vi: 'Hành tây' }, { en: 'Peas', vi: 'Đậu hà lan' }, { en: 'Potato', vi: 'Khoai tây' }, { en: 'Pumpkin', vi: 'Bí đỏ' }, { en: 'Radish', vi: 'Củ cải' }, { en: 'Seaweed', vi: 'Rong biển' }, { en: 'Spinach', vi: 'Rau chân vịt' }, { en: 'Squash', vi: 'Bí' }, { en: 'Sweet potato', vi: 'Khoai lang' }, { en: 'Turmetic', vi: 'Nghệ' }, { en: 'Water morning glory', vi: 'Rau muống' }, { en: 'Wintermelon', vi: 'Bí đao' }, { en: 'Yam', vi: 'Khoai mỡ' }, { en: 'Almond', vi: 'Hạnh nhân' }, { en: 'Cashew', vi: 'Hạt điều' }, { en: 'Chestnut', vi: 'Hạt dẻ' }, { en: 'Mung bean', vi: 'Đậu xanh' }, { en: 'Peanut', vi: 'Đậu phộng (lạc)' }, { en: 'Pumpkin seeds', vi: 'Hạt bí' }, { en: 'Red bean', vi: 'Đậu đỏ' }, { en: 'Sesame seeds', vi: 'Hạt vừng' }, { en: 'Soy bean', vi: 'Đậu nành' }, { en: 'Sunflower seeds', vi: 'Hạt hướng dương' }, { en: 'Walnut', vi: 'Hạt óc chó' }, { en: 'Apartment', vi: 'Căn hộ' }, { en: 'Condominium', vi: 'Chung cư' }, { en: 'Villa', vi: 'Biệt thự' }, { en: 'Palace', vi: 'Cung điện' }, { en: 'Tent', vi: 'Lều' }, { en: 'House boat', vi: 'Nhà thuyền' }, { en: 'Balcony', vi: 'Ban công' }, { en: 'Basement', vi: 'Móng' }, { en: 'Bathroom', vi: 'Phòng tắm' }, { en: 'Bedroom', vi: 'Phòng ngủ' }, { en: 'Ceiling', vi: 'Trần nhà' }, { en: 'Chimney', vi: 'Ống khói' }, { en: 'Dining room', vi: 'Phòng ăn' }, { en: 'Door', vi: 'Cửa chính' }, { en: 'Floor', vi: 'Sàn' }, { en: 'Garage', vi: 'Ga-ra' }, { en: 'Garden', vi: 'Vườn' }, { en: 'Guest room', vi: 'Phòng cho khách' }, { en: 'Kitchen', vi: 'Nhà bếp' }, { en: 'Living room', vi: 'Phòng khách' }, { en: 'Roof', vi: 'Mái nhà' }, { en: 'Stairs', vi: 'Cầu thang' }, { en: 'Store room', vi: 'Nhà kho' }, { en: 'Wall', vi: 'Tường' }, { en: 'Window', vi: 'Cửa sổ' }, { en: 'Cabinet', vi: 'Tủ đựng đồ' }, { en: 'Trash can', vi: 'Thùng rác' }, { en: 'Sink', vi: 'Bồn rửa' }, { en: 'Toaster', vi: 'Máy nướng bánh mỳ' }, { en: 'Shelf', vi: 'Giá đựng đồ' }, { en: 'Refrigerator', vi: 'Tủ lạnh' }, { en: 'Coffee maker', vi: 'Máy pha cà phê' }, { en: 'Microwave oven', vi: 'Lò vi sóng' }, { en: 'Spatula', vi: 'Xẻng nấu ăn' }, { en: 'Ladle', vi: 'Cái muôi, cái vá' }, { en: 'Cutting board', vi: 'Thớt' }, { en: 'Blender', vi: 'Máy xay sinh tố' }, { en: 'Cooker hood', vi: 'Máy hút khói' }, { en: 'Electric stove', vi: 'Bếp điện' }, { en: 'Pan', vi: 'Chảo' }, { en: 'Gas stove', vi: 'Bếp ga' }, { en: 'Kettle', vi: 'Ấm đun nước' }, { en: 'Pot', vi: 'Nồi' }, { en: 'Oven', vi: 'Lò nướng' }, { en: 'Plate', vi: 'Cái đĩa' }, { en: 'Ceiling fan', vi: 'Quạt trần' }, { en: 'Candle', vi: 'Nến' }, { en: 'Vase', vi: 'Bình hoa' }, { en: 'Tray', vi: 'Khay' }, { en: 'Teapot', vi: 'Ấm trà' },
+            // TUẦN 6
+            { en: 'Dining table', vi: 'Bàn ăn' }, { en: 'Tablecloth', vi: 'Khăn trải bàn' }, { en: 'Napkin', vi: 'Khăn giấy' }, { en: 'Chopsticks', vi: 'Đũa' }, { en: 'Fork', vi: 'Dĩa' }, { en: 'Knife', vi: 'Dao' }, { en: 'Spoon', vi: 'Thìa' }, { en: 'Bowl', vi: 'Bát' }, { en: 'Glass', vi: 'Cốc thủy tinh' }, { en: 'Coffee cup', vi: 'Cốc uống cà phê' }, { en: 'Mug', vi: 'Cốc có quai' }, { en: 'Scratched', vi: 'Trầy xước' }, { en: 'Cracked', vi: 'Nứt' }, { en: 'Smashed', vi: 'Vỡ, bể' }, { en: 'Burnt', vi: 'Cháy, khét' }, { en: 'Stained', vi: 'Bị nhơ, có vết bẩn' }, { en: 'Chipped', vi: 'Sứt mẻ' }, { en: 'Dented', vi: 'Móp' }, { en: 'Bent', vi: 'Bị cong, bị méo' }, { en: 'Crumpled', vi: 'Nhăn nhúm' }, { en: 'Animal', vi: 'Động vật' }, { en: 'Bear', vi: 'Con gấu' }, { en: 'Cat', vi: 'Con mèo' }, { en: 'Deer', vi: 'Con nai' }, { en: 'Dog', vi: 'Con chó' }, { en: 'Donkey', vi: 'Con lừa' }, { en: 'Elephant', vi: 'Con voi' }, { en: 'Fox', vi: 'Con cáo' }, { en: 'Goat', vi: 'Con dê' }, { en: 'Horse', vi: 'Con ngựa' }, { en: 'Kangaroo', vi: 'Chuột túi' }, { en: 'Lion', vi: 'Sư tử' }, { en: 'Monkey', vi: 'Con khỉ' }, { en: 'Mouse', vi: 'Con chuột' }, { en: 'Panda', vi: 'Gấu trúc' }, { en: 'Pig', vi: 'Con lợn' }, { en: 'Rabbit', vi: 'Con thỏ' }, { en: 'Rhinoceros', vi: 'Tê giác' }, { en: 'Sheep', vi: 'Con cừu' }, { en: 'Snail', vi: 'Con ốc' }, { en: 'Snake', vi: 'Con rắn' }, { en: 'Spider', vi: 'Con nhện' }, { en: 'Squirrel', vi: 'Con sóc' }, { en: 'Tiger', vi: 'Con hổ' }, { en: 'Wolf', vi: 'Chó sói' }, { en: 'Worm', vi: 'Con sâu' }, { en: 'Zebra', vi: 'Ngựa vằn' }, { en: 'Crocodile', vi: 'Cá sấu' }, { en: 'Dolphin', vi: 'Cá heo' }, { en: 'Fish', vi: 'Con cá' }, { en: 'Jellyfish', vi: 'Sứa biển' }, { en: 'Shark', vi: 'Cá mập' }, { en: 'Shrimp', vi: 'Con tôm' }, { en: 'Starfish', vi: 'Sao biển' }, { en: 'Turtle', vi: 'Con rùa' }, { en: 'Bird', vi: 'Chim' }, { en: 'Bee', vi: 'Con ong' }, { en: 'Butterfly', vi: 'Con bướm' }, { en: 'Crow', vi: 'Con quạ' }, { en: 'Duck', vi: 'Con vịt' }, { en: 'Eagle', vi: 'Đại bàng' }, { en: 'Fly', vi: 'Con ruồi' }, { en: 'Goose', vi: 'Con ngỗng' }, { en: 'Mosquito', vi: 'Con muỗi' }, { en: 'Owl', vi: 'Chim cú' }, { en: 'Parrot', vi: 'Con vẹt' }, { en: 'Peacock', vi: 'Chim công' }, { en: 'Penguin', vi: 'Chim cánh cụt' }, { en: 'Pigeon', vi: 'Chim bồ câu' }, { en: 'Swan', vi: 'Thiên nga' }, { en: 'Happy', vi: 'Vui vẻ' }, { en: 'Confident', vi: 'Tự tin' }, { en: 'Delighted', vi: 'Rất hạnh phúc' }, { en: 'Enthusiastic', vi: 'Nhiệt tình' }, { en: 'Excited', vi: 'Phấn khích, hứng thú' }, { en: 'Great', vi: 'Tuyệt vời' }, { en: 'Overjoyed', vi: 'Cực kỳ hứng thú' }, { en: 'Positive', vi: 'Tích cực' }, { en: 'Optimistic', vi: 'Lạc quan' }, { en: 'Relaxed', vi: 'Thư giãn, thoải mái' }, { en: 'Surprised', vi: 'Ngạc nhiên' }, { en: 'Wonderful', vi: 'Tuyệt vời' }, { en: 'Hopeful', vi: 'Đầy hi vọng' }, { en: 'Fantastic', vi: 'Tuyệt vời' }, { en: 'Cool', vi: 'Ngầu' }, { en: 'Energetic', vi: 'Đầy năng lượng' }, { en: 'Proud', vi: 'Tự hào' }, { en: 'Sad', vi: 'Buồn' }, { en: 'Angry', vi: 'Tức giận' }, { en: 'Anxious', vi: 'Lo lắng' }, { en: 'Annoyed', vi: 'Bực mình' }, { en: 'Arrogant', vi: 'Kiêu ngạo' }, { en: 'Ashamed', vi: 'Xấu hổ' }, { en: 'Bored', vi: 'Chán' }, { en: 'Confused', vi: 'Lúng túng' }, { en: 'Depressed', vi: 'Rất buồn' }, { en: 'Desperate', vi: 'Tuyệt vọng' }, { en: 'Disappointed', vi: 'Thất vọng' },
+            // TUẦN 7
+            { en: 'Frightened', vi: 'Sợ hãi' }, { en: 'Frustrated', vi: 'Tuyệt vọng' }, { en: 'Furious', vi: 'Giận giữ, điên tiết' }, { en: 'Hurt', vi: 'Tổn thương' }, { en: 'Irritated', vi: 'Khó chịu' }, { en: 'Jealous', vi: 'Ganh tị' }, { en: 'Negative', vi: 'Bi quan' }, { en: 'Scared', vi: 'Sợ hãi' }, { en: 'Stressed', vi: 'Mệt mỏi' }, { en: 'Suspicious', vi: 'Đa nghi, ngờ vực' }, { en: 'Terrible', vi: 'Khủng khiếp' }, { en: 'Terrified', vi: 'Rất sợ hãi' }, { en: 'Tense', vi: 'Căng thẳng' }, { en: 'Tired', vi: 'Mệt' }, { en: 'Upset', vi: 'Bực bội' }, { en: 'Worried', vi: 'Lo lắng' }, { en: 'assignment', vi: 'bài tập tiểu luận' }, { en: 'boarding school', vi: 'trường nội trú' }, { en: 'campus', vi: 'khu trường học' }, { en: 'co-education', vi: 'nam nữ đồng giáo' }, { en: 'concentrate', vi: 'tập trung' }, { en: 'coursework', vi: 'đồ án môn học' }, { en: 'curriculum', vi: 'chương trình giảng dạy' }, { en: 'distance learning', vi: 'việc học từ xa' }, { en: 'eager beaver', vi: 'người chăm chỉ' }, { en: 'enroll', vi: 'đăng ký' }, { en: 'evaluation', vi: 'sự đánh giá' }, { en: 'fellowship', vi: 'học bổng nghiên cứu sinh' }, { en: 'final (exam)', vi: 'bài thi cuối kỳ' }, { en: 'graduate', vi: 'tốt nghiệp' }, { en: 'higher education', vi: 'giáo dục cấp đại học' }, { en: 'illiterate', vi: 'mù chữ, thất học' }, { en: 'institution', vi: 'viện, cơ quan' }, { en: 'internship', vi: 'kỳ thực tập' }, { en: 'kindergarten', vi: 'lớp mẫu giáo' }, { en: 'lecture', vi: 'bài giảng' }, { en: 'literacy', vi: 'khả năng biết đọc và viết' }, { en: 'material', vi: 'học liệu' }, { en: 'physical education', vi: 'giáo dục thể chất' }, { en: 'plagiarize', vi: 'đạo văn' }, { en: 'practice', vi: 'bài luyện tập' }, { en: 'premise', vi: 'giả thuyết, tiền đề' }, { en: 'preschool', vi: 'trường mầm non' }, { en: 'primary school', vi: 'trường tiểu học' }, { en: 'private school', vi: 'trường tư' }, { en: 'qualification', vi: 'năng lực' }, { en: 'secondary school', vi: 'trường trung học' }, { en: 'syllabus', vi: 'giáo trình' }, { en: 'teacher\'s pet', vi: 'học sinh cưng' }, { en: 'thesis', vi: 'luận văn, luận án' }, { en: 'tuition', vi: 'hoạt động giảng dạy' }, { en: 'undergraduate', vi: 'sinh viên chưa tốt nghiệp' }, { en: 'vocational school', vi: 'trường dạy nghề' }, { en: 'backpack', vi: 'ba lô' }, { en: 'ballpoint pen', vi: 'bút bi' }, { en: 'beaker', vi: 'cốc đong' }, { en: 'binder', vi: 'bìa rời' }, { en: 'blackboard', vi: 'bảng đen' }, { en: 'book', vi: 'quyển sách' }, { en: 'calculator', vi: 'máy tính bỏ túi' }, { en: 'chair', vi: 'ghế' }, { en: 'clip', vi: 'kẹp ghim' }, { en: 'clock', vi: 'đồng hồ' }, { en: 'compass', vi: 'la bàn' }, { en: 'computer', vi: 'máy tính để bàn' }, { en: 'desk', vi: 'bàn học' }, { en: 'eraser', vi: 'tẩy, gôm' }, { en: 'funnel', vi: 'phễu' }, { en: 'globe', vi: 'quả địa cầu' }, { en: 'glue', vi: 'keo hồ' }, { en: 'highlighter', vi: 'bút nhớ' }, { en: 'magnifying glass', vi: 'kính lúp' }, { en: 'map', vi: 'bản đồ' }, { en: 'paint brush', vi: 'cọ tô màu' }, { en: 'paper', vi: 'giấy' }, { en: 'pin', vi: 'đinh ghim' }, { en: 'protractor', vi: 'thước đo góc' }, { en: 'scissors', vi: 'kéo' }, { en: 'scotch tape', vi: 'băng keo' }, { en: 'set square', vi: 'thước vuông, ê-ke' }, { en: 'stapler', vi: 'cái dập ghim' }, { en: 'test tube', vi: 'ống thí nghiệm' }, { en: 'Arctic', vi: 'vùng Bắc Cực' }, { en: 'atmosphere', vi: 'khí quyển' }, { en: 'beach', vi: 'bãi biển' }, { en: 'breezy', vi: 'gió thổi hiu mát' }, { en: 'bush', vi: 'bụi cây, bụi rậm' }, { en: 'cave', vi: 'hang động' }, { en: 'cliff', vi: 'vách đá' }, { en: 'coal', vi: 'than đá' }, { en: 'creek', vi: 'lạch, nhánh sông' }, { en: 'daisy', vi: 'hoa cúc' }, { en: 'deforestation', vi: 'sự tàn phá rừng' }, { en: 'desert', vi: 'sa mạc' },
+            // TUẦN 8
+            { en: 'ecological', vi: '(thuộc) sinh thái' }, { en: 'environment', vi: 'môi trường' }, { en: 'eruption', vi: 'sự phun trào (núi lửa)' }, { en: 'flood', vi: 'lũ lụt' }, { en: 'flower', vi: 'hoa' }, { en: 'fossil', vi: 'chất liệu hóa thạch' }, { en: 'gloomy', vi: 'u ám, ảm đạm' }, { en: 'graze', vi: 'thả (súc vật) ăn cỏ' }, { en: 'herd', vi: 'bầy, đàn (vật nuôi)' }, { en: 'highland', vi: 'cao nguyên' }, { en: 'hurricane', vi: 'bão' }, { en: 'insect', vi: 'côn trùng, sâu bọ' }, { en: 'livestock', vi: 'vật nuôi, thú nuôi' }, { en: 'meadow', vi: 'đồng cỏ, bãi cỏ' }, { en: 'misty', vi: 'có sương mù' }, { en: 'mountain', vi: 'núi, dãy núi' }, { en: 'mud', vi: 'bùn' }, { en: 'overcast', vi: 'mây phủ' }, { en: 'peninsula', vi: 'bán đảo' }, { en: 'petal', vi: 'cánh hoa' }, { en: 'planet', vi: 'hành tinh' }, { en: 'pollution', vi: 'ô nhiễm' }, { en: 'pond', vi: 'ao nước' }, { en: 'river', vi: 'dòng sông' }, { en: 'riverbank', vi: 'bờ sông' }, { en: 'root', vi: 'gốc, rễ cây' }, { en: 'rubbish', vi: 'rác rưởi' }, { en: 'savanna', vi: 'hoang mạc, thảo nguyên' }, { en: 'scenery', vi: 'phong cảnh, cảnh vật' }, { en: 'sea', vi: 'biển' }, { en: 'season', vi: 'mùa trong năm' }, { en: 'seed', vi: 'hạt giống' }, { en: 'slaughter', vi: 'sự giết mổ' }, { en: 'sleet', vi: 'mưa tuyết, mưa đá' }, { en: 'slope', vi: 'dốc' }, { en: 'snowslide', vi: 'tuyết lở' }, { en: 'soil', vi: 'đất trồng' }, { en: 'solar', vi: '(thuộc) mặt trời' }, { en: 'sunshine', vi: 'ánh sáng mặt trời' }, { en: 'sustainable', vi: 'bền vững' }, { en: 'temperature', vi: 'nhiệt độ' }, { en: 'tornado', vi: 'lốc xoáy' }, { en: 'tsunami', vi: 'sóng thần' }, { en: 'valley', vi: 'thung lũng' }, { en: 'vapor', vi: 'bốc hơi' }, { en: 'vivid', vi: 'sống động' }, { en: 'volcano', vi: 'núi lửa' }, { en: 'waterfall', vi: 'thác nước' }, { en: 'wild', vi: 'hoang dại' }, { en: 'wildlife', vi: 'sinh vật hoang dã' }, { en: 'winter', vi: 'mùa đông' }, { en: 'bald eagle', vi: 'đại bàng trắng' }, { en: 'chimpanzee', vi: 'con tinh tinh' }, { en: 'coyote', vi: 'chó sói đồng cỏ' }, { en: 'crab', vi: 'con cua' }, { en: 'dove', vi: 'chim bồ câu' }, { en: 'goldfish', vi: 'cá vàng' }, { en: 'hamster', vi: 'chuột đồng' }, { en: 'hawk', vi: 'chim diều hâu' }, { en: 'hedgehog', vi: 'con nhím' }, { en: 'hippopotamus', vi: 'hà mã' }, { en: 'kitten', vi: 'mèo con' }, { en: 'koala', vi: 'gấu túi' }, { en: 'leopard', vi: 'con báo' }, { en: 'ostrich', vi: 'đà điểu' }, { en: 'otter', vi: 'rái cá' }, { en: 'ox', vi: 'con bò đực' }, { en: 'puppy', vi: 'chó con' }, { en: 'raven', vi: 'con quạ' }, { en: 'robin', vi: 'chim cổ đỏ' }, { en: 'seagull', vi: 'mòng biển, hải âu' }, { en: 'sparrow', vi: 'chim sẻ' }, { en: 'stork', vi: 'con cò' }, { en: 'turkey', vi: 'con gà tây' }, { en: 'walrus', vi: 'hải mã' }, { en: 'woodpecker', vi: 'chim gõ kiến' }, { en: 'art gallery', vi: 'phòng trưng bày tranh' }, { en: 'ballet', vi: 'ba lê, kịch múa' }, { en: 'bar', vi: 'quán rượu' }, { en: 'bowling', vi: 'trò chơi lăn bóng' }, { en: 'cafè', vi: 'quán cà phê' }, { en: 'cheat', vi: 'gian lận' }, { en: 'cinema', vi: 'rạp chiếu phim' }, { en: 'circus', vi: 'rạp xiếc' }, { en: 'concert', vi: 'buổi hòa nhạc' }, { en: 'concert hall', vi: 'phòng hòa nhạc' }, { en: 'cosplay', vi: 'trò chơi hóa trang' }, { en: 'dartboard', vi: 'tấm bia phi tiêu' }, { en: 'exhibition', vi: 'buổi triển lãm' }, { en: 'film', vi: 'phim' }, { en: 'handcraft', vi: 'nghề thủ công' }, { en: 'leisure centre', vi: 'khu vui chơi' }, { en: 'monopoly', vi: 'trò chơi cờ tỷ phú' }, { en: 'museum', vi: 'bảo tàng' }, { en: 'nightclub', vi: 'hộp đêm' }, { en: 'opera', vi: 'nhạc kịch' },
+            // TUẦN 9
+            { en: 'opera house', vi: 'nhà hát' }, { en: 'play', vi: 'vui chơi' }, { en: 'pub', vi: 'quán rượu' }, { en: 'quiz', vi: 'trò chơi đố vui' }, { en: 'restaurant', vi: 'nhà hàng' }, { en: 'soft play', vi: 'trò chơi nhẹ nhàng' }, { en: 'stadium', vi: 'sân vận động' }, { en: 'theater', vi: 'nhà hát' }, { en: 'zoo', vi: 'sở thú' }, { en: 'accommodation', vi: 'chỗ ở' }, { en: 'armchair', vi: 'ghế bành' }, { en: 'attic', vi: 'gác mái' }, { en: 'bleach', vi: 'chất tẩy trắng' }, { en: 'broom', vi: 'cái chổi' }, { en: 'bucket', vi: 'Xô' }, { en: 'closet', vi: 'phòng để đồ' }, { en: 'cloth', vi: 'miếng vải' }, { en: 'cottage', vi: 'nhà tranh' }, { en: 'couch', vi: 'ghế dài' }, { en: 'counter', vi: 'kệ bếp' }, { en: 'doorstep', vi: 'ngưỡng cửa' }, { en: 'doorway', vi: 'lối ra vào' }, { en: 'dustpan', vi: 'xẻng hốt rác' }, { en: 'entrance', vi: 'lối vào' }, { en: 'iron', vi: 'bàn là' }, { en: 'ironing board', vi: 'bàn để là quần áo' }, { en: 'laundry basket', vi: 'giỏ đựng quần áo' }, { en: 'laundry detergent', vi: 'dung dịch tẩy' }, { en: 'mop', vi: 'chổi lau nhà' }, { en: 'pantry', vi: 'phòng để thức ăn' }, { en: 'patio', vi: 'hiên, sân hè' }, { en: 'roof', vi: 'mái nhà' }, { en: 'rubber gloves', vi: 'găng tay cao su' }, { en: 'rug', vi: 'thảm trải sàn' }, { en: 'scrub brush', vi: 'bàn chải cọ' }, { en: 'shower', vi: 'vòi hoa sen' }, { en: 'sponge', vi: 'miếng bọt biển' }, { en: 'stove', vi: 'bếp lò' }, { en: 'toilet', vi: 'bồn cầu' }, { en: 'towel', vi: 'khăn vải' }, { en: 'wardrobe', vi: 'tủ quần áo' }, { en: 'washing machine', vi: 'máy giặt' }, { en: 'artichoke', vi: 'Atiso' }, { en: 'asparagus', vi: 'măng tây' }, { en: 'bean', vi: 'hạt đậu' }, { en: 'beetroot', vi: 'củ cải đường' }, { en: 'broccoli', vi: 'bông cải xanh' }, { en: 'Brussels sprout', vi: 'cải Brussel' }, { en: 'cabbage', vi: 'bắp cải' }, { en: 'carrot', vi: 'củ cà rốt' }, { en: 'cauliflower', vi: 'súp lơ' }, { en: 'celery', vi: 'cần tây' }, { en: 'chili pepper', vi: 'ớt đỏ' }, { en: 'courgette/ Zucchini', vi: 'bí ngòi' }, { en: 'leek', vi: 'tỏi tây' }, { en: 'mandarin', vi: 'quả quýt' }, { en: 'nectarine', vi: 'quả xuân đào' }, { en: 'pea', vi: 'đậu Hà Lan' }, { en: 'pomegranate', vi: 'quả lựu' }, { en: 'radish', vi: 'củ cải đỏ' }, { en: 'spinach', vi: 'rau bina' }, { en: 'spring Onion', vi: 'hành lá xanh' }, { en: 'turnip', vi: 'củ cải trắng' }, { en: 'active', vi: 'năng nổ, lanh lợi' }, { en: 'alert', vi: 'tỉnh táo, cảnh giác' }, { en: 'ambitious', vi: 'tham vọng' }, { en: 'attentive', vi: 'chăm chú' }, { en: 'bold', vi: 'táo bạo, mạo hiểm' }, { en: 'brave', vi: 'dũng cảm, gan dạ' }, { en: 'careful', vi: 'cẩn thận' }, { en: 'careless', vi: 'bất cẩn, cẩu thả' }, { en: 'cautious', vi: 'thận trọng' }, { en: 'conscientious', vi: 'chu đáo, tỉ mỉ' }, { en: 'courageous', vi: 'can đảm' }, { en: 'crafty', vi: 'láu cá, xảo quyệt' }, { en: 'cunning', vi: 'xảo trá' }, { en: 'deceitful', vi: 'dối trá' }, { en: 'decent', vi: 'lịch sự, tao nhã' }, { en: 'dependable', vi: 'đáng tin cậy' }, { en: 'determined', vi: 'quyết tâm' }, { en: 'devoted', vi: 'hết lòng, tận tâm' }, { en: 'diligent', vi: 'siêng năng, cần cù' }, { en: 'disciplined', vi: 'có tính kỷ luật' }, { en: 'disloyal', vi: 'phản trắc, phản bội' }, { en: 'fair', vi: 'ngay thẳng' }, { en: 'fearless', vi: 'bạo dạn' }, { en: 'forgetful', vi: 'hay quên' },
+            // TUẦN 10
+            { en: 'hard-headed', vi: 'cứng đầu, ương ngạnh' }, { en: 'hardworking', vi: 'chăm chỉ, chịu khó' }, { en: 'hardy', vi: 'táo bạo, gan dạ' }, { en: 'idle', vi: 'nhàn rỗi, lười nhác' }, { en: 'immature', vi: 'non nớt, thiếu chín chắn' }, { en: 'impartial', vi: 'trung lập, ngay thẳng' }, { en: 'inattentive', vi: 'lơ đễnh' }, { en: 'independent', vi: 'tự lập' }, { en: 'insightful', vi: 'sâu sắc, sáng suốt' }, { en: 'insincere', vi: 'không thành thực' }, { en: 'irrational', vi: 'không hợp lý' }, { en: 'irresponsible', vi: 'thiếu trách nhiệm' }, { en: 'lazy', vi: 'lười biếng' }, { en: 'level-headed', vi: 'bình tĩnh, điềm đạm' }, { en: 'loyal', vi: 'trung thành, trung kiên' }, { en: 'mature', vi: 'trưởng thành, chững chạc' }, { en: 'methodical', vi: 'ngăn nắp, cẩn thận' }, { en: 'naive', vi: 'ngây thơ' }, { en: 'objective', vi: 'khách quan' }, { en: 'observant', vi: 'tinh ý, hay quan sát' }, { en: 'opinionated', vi: 'cứng đầu, ngoan cố' }, { en: 'organized', vi: 'có trật tự, ngăn nắp' }, { en: 'passive', vi: 'thụ động' }, { en: 'perceptive', vi: 'mẫn cảm, sâu sắc' }, { en: 'persevering', vi: 'kiên nhẫn, bền bỉ' }, { en: 'practical', vi: 'thực tế' }, { en: 'prudent', vi: 'thận trọng, khôn ngoan' }, { en: 'quick', vi: 'nhanh nhẹn' }, { en: 'rational', vi: 'có lý trí' }, { en: 'reasonable', vi: 'biết điều' }, { en: 'reckless', vi: 'liều lĩnh, táo bạo' }, { en: 'reliable', vi: 'đáng tin tưởng' }, { en: 'resolute', vi: 'cương quyết' }, { en: 'responsible', vi: 'có trách nhiệm' }, { en: 'scrupulous', vi: 'kĩ lưỡng, tỉ mỉ' }, { en: 'sensible', vi: 'khôn ngoan' }, { en: 'shallow', vi: 'nông cạn' }, { en: 'shrewd', vi: 'khôn ngoan' }, { en: 'sincere', vi: 'chân thành' }, { en: 'slow', vi: 'chậm chạp' }, { en: 'sluggish', vi: 'uể oải, lờ đờ' }, { en: 'sly', vi: 'ranh mãnh, quỷ quyệt' }, { en: 'strong', vi: 'mạnh mẽ, đanh thép' }, { en: 'strong-minded', vi: 'cứng cỏi, kiên quyết' }, { en: 'strong-willed', vi: 'cứng cỏi' }, { en: 'stubborn', vi: 'bướng bỉnh' }, { en: 'superficial', vi: 'hời hợt, nông cạn' }, { en: 'superstitious', vi: 'mê tín' }, { en: 'thorough', vi: 'kỹ lưỡng, thấu đáo' }, { en: 'timid', vi: 'rụt rè, bẽn lẽn' }, { en: 'tough', vi: 'cứng rắn' }, { en: 'treacherous', vi: 'bội bạc' }, { en: 'trustworthy', vi: 'đáng tin' }, { en: 'truthful', vi: 'thật thà, chân thật' }, { en: 'unbiased', vi: 'không thiên vị' }, { en: 'unpredictable', vi: 'khó đoán' }, { en: 'unreasonable', vi: 'vô lý, quá đáng' }, { en: 'unreliable', vi: 'không đáng tin' }, { en: 'unscrupulous', vi: 'cẩu thả' }, { en: 'vigorous', vi: 'mạnh mẽ, sôi nổi' }, { en: 'weak', vi: 'yếu đuối' }, { en: 'armpit', vi: 'nách' }, { en: 'breast', vi: 'ngực, vú (phụ nữ)' }, { en: 'earlobe', vi: 'dái tai' }, { en: 'eyelid', vi: 'mí mắt' }, { en: 'forearm', vi: 'cẳng tay' }, { en: 'gum', vi: 'nướu, lợi' }, { en: 'heel', vi: 'gót chân' }, { en: 'index finger', vi: 'ngón tay trỏ' }, { en: 'mustache', vi: 'râu mép, ria' }, { en: 'bacon', vi: 'thịt xông khói' }, { en: 'bagel', vi: 'bánh vòng' }, { en: 'baguette', vi: 'bánh mỳ dài' }, { en: 'breadstick', vi: 'bánh mỳ que' }, { en: 'cheese', vi: 'phó mát' }, { en: 'chicken nugget', vi: 'gà viên chiên' }, { en: 'coffee', vi: 'cà phê' }, { en: 'croissant', vi: 'bánh sừng bò' }, { en: 'donut', vi: 'bánh rán' }, { en: 'egg', vi: 'trứng' }, { en: 'fish and chips', vi: 'cá và khoai tây chiên' }, { en: 'French fries', vi: 'khoai tây chiên' }, { en: 'hot chocolate', vi: 'sô cô la nóng' }, { en: 'hot dog', vi: 'bánh mỳ kẹp xúc xích' }, { en: 'ice cream', vi: 'kem' }, { en: 'jelly roll', vi: 'bánh cuộn' }, { en: 'marmalade', vi: 'mứt cam' }, { en: 'milk', vi: 'sữa' }, { en: 'muffin', vi: 'bánh nướng xốp' }, { en: 'onion ring', vi: 'vòng hành' }
         ];
 
-        if (!localStorage.getItem('defaultVocabulary')) {
-            localStorage.setItem('defaultVocabulary', JSON.stringify(initialDefaultVocabularyList));
+        const weeklyVocabularies = [];
+        const totalWords = allVocabulary.length;
+        const numWeeks = 10;
+        const wordsPerWeek = Math.ceil(totalWords / numWeeks);
+
+        for (let i = 0; i < numWeeks; i++) {
+            const start = i * wordsPerWeek;
+            const end = start + wordsPerWeek;
+            weeklyVocabularies.push(allVocabulary.slice(start, end));
         }
 
-        const loginPage = document.getElementById('loginPage');
-        const adminPage = document.getElementById('adminPage');
-        const quizPage = document.getElementById('quizPage');
+        initializeWeekSelection(weeklyVocabularies);
+        initializeQuiz();
 
-        function showPage(pageId) {
-            loginPage.classList.add('hidden');
-            adminPage.classList.add('hidden');
-            quizPage.classList.add('hidden');
-            
-            const pageToShow = document.getElementById(pageId);
-            if(pageToShow) {
-                pageToShow.classList.remove('hidden');
-            }
-        }
-        
-        initializeLogin(showPage);
-        initializeAdmin(showPage);
-        initializeQuiz(showPage);
-
-        showPage('loginPage');
+        // Show welcome popup on first load
+        document.getElementById('welcomePopup').classList.remove('hidden');
+        document.getElementById('quizPopupContainer').classList.remove('hidden');
     });
 
-    // =================================================================
-    //                     LOGIN PAGE LOGIC
-    // =================================================================
-    function initializeLogin(showPage) {
-        const loginForm = document.getElementById('loginForm');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const popupOverlay = document.getElementById('loginPopupOverlay');
-        const popupMessage = document.getElementById('loginPopupMessage');
-        const closePopupButton = document.getElementById('closeLoginPopupButton');
+    function initializeWeekSelection(weeklyVocabularies) {
+        const weekGrid = document.getElementById('weekGrid');
+        const weekSelectionScreen = document.getElementById('weekSelectionScreen');
+        const quizPage = document.getElementById('quizPage');
+        let quizVocab = [];
 
-        function showLoginPopup(message) {
-            popupMessage.textContent = message;
-            popupOverlay.classList.remove('hidden');
-        }
+        for (let i = 0; i < 10; i++) {
+            const weekBtn = document.createElement('button');
+            weekBtn.textContent = `Tuần ${i + 1}`;
+            weekBtn.className = 'week-btn bg-pink-500 text-white font-bold py-4 px-2 rounded-lg text-lg';
+            weekBtn.onclick = () => {
+                quizVocab = weeklyVocabularies[i];
+                window.currentQuizVocabulary = quizVocab; // Pass vocab to global scope for the quiz
+                window.startQuiz();
+            };
+            weekGrid.appendChild(weekBtn);
 
-        closePopupButton.addEventListener('click', () => popupOverlay.classList.add('hidden'));
-
-        loginForm.addEventListener('submit', function(event) {
-            event.preventDefault(); 
-            const username = usernameInput.value;
-            const password = passwordInput.value;
-
-            if (username === '' || password === '') {
-                showLoginPopup('Vui lòng nhập đầy đủ thông tin!');
-            } else if (username === 'admin' && password === 'admin') {
-                showPage('adminPage');
-                loginForm.reset();
-            } else if (username === 'chip230905' && password === 'chip230905') {
-                showPage('quizPage');
-                loginForm.reset();
-                document.getElementById('welcomePopup').classList.remove('hidden');
-                document.getElementById('quizPopupContainer').classList.remove('hidden');
-            } else {
-                showLoginPopup('Sai tài khoản hoặc mật khẩu!');
+            if ((i + 1) % 5 === 0) {
+                const monthTestBtn = document.createElement('button');
+                const startWeek = i - 4;
+                const endWeek = i;
+                monthTestBtn.textContent = `Kiểm tra Tháng ${ (i + 1) / 5 } (Tuần ${startWeek + 1}-${endWeek + 1})`;
+                monthTestBtn.className = 'month-btn bg-purple-600 text-white font-bold py-4 rounded-lg text-lg col-span-2 sm:col-span-3 md:col-span-5';
+                monthTestBtn.onclick = () => {
+                    quizVocab = weeklyVocabularies.slice(startWeek, endWeek + 1).flat();
+                    window.currentQuizVocabulary = quizVocab;
+                    window.startQuiz();
+                };
+                weekGrid.appendChild(monthTestBtn);
             }
-        });
-        
-        document.querySelectorAll('#loginPage button').forEach(button => {
-            button.addEventListener('click', function(e) {
-                const oldRipple = this.querySelector('.ripple');
-                if(oldRipple) oldRipple.remove();
-                const rect = e.target.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const ripple = document.createElement('span');
-                ripple.style.left = x + 'px';
-                ripple.style.top = y + 'px';
-                ripple.classList.add('ripple');
-                this.appendChild(ripple);
-                setTimeout(() => ripple.remove(), 600);
-            });
-        });
+        }
     }
 
-    // =================================================================
-    //                  ADMIN PAGE LOGIC
-    // =================================================================
-    function initializeAdmin(showPage) {
-        let previewedWords = [];
-        const fileInput = document.getElementById('file-input');
-        const fileChosen = document.getElementById('file-chosen');
-        const previewBtn = document.getElementById('preview-btn');
-        const saveBtn = document.getElementById('save-btn');
-        const statusDiv = document.getElementById('status');
-        const dropZone = document.getElementById('drop-zone');
-        const popupOverlay = document.getElementById('adminPopupOverlay');
-        const popupMessage = document.getElementById('adminPopupMessage');
-        const popupCloseBtn = document.getElementById('adminPopupCloseBtn');
-        const adminLogoutBtn = document.getElementById('adminLogoutBtn');
-        const demoContainer = document.getElementById('demo-container');
-        const demoQuizOutput = document.getElementById('demo-quiz-output');
-        const demoAnswersOutput = document.getElementById('demo-answers-output');
-        
-        function resetAdminView() {
-            previewedWords = [];
-            fileInput.value = '';
-            fileChosen.textContent = 'Chưa có file nào được chọn';
-            previewBtn.disabled = true;
-            previewBtn.classList.remove('hidden');
-            saveBtn.classList.add('hidden');
-            demoContainer.classList.add('hidden');
-            statusDiv.textContent = '';
-        }
 
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) {
-                fileChosen.textContent = `Đã chọn ${fileInput.files.length} file.`;
-                previewBtn.disabled = false;
-                statusDiv.textContent = '';
-                demoContainer.classList.add('hidden');
-                saveBtn.classList.add('hidden');
-                previewBtn.classList.remove('hidden');
-            } else {
-                fileChosen.textContent = 'Chưa có file nào được chọn';
-                previewBtn.disabled = true;
-            }
-        });
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, e => e.preventDefault() || e.stopPropagation());
-        });
-        ['dragenter', 'dragover'].forEach(eventName => dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over')));
-        ['dragleave', 'drop'].forEach(eventName => dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over')));
-        dropZone.addEventListener('drop', (e) => {
-            fileInput.files = e.dataTransfer.files;
-            fileInput.dispatchEvent(new Event('change'));
-        });
-        
-        adminLogoutBtn.addEventListener('click', () => showPage('loginPage'));
-
-        previewBtn.addEventListener('click', () => {
-            if (fileInput.files.length === 0) {
-                showAdminPopup('Vui lòng chọn ít nhất một file Word!');
-                return;
-            }
-            handleFilePreview(fileInput.files);
-        });
-
-        saveBtn.addEventListener('click', () => {
-            if (previewedWords.length > 0) {
-                localStorage.setItem('defaultVocabulary', JSON.stringify(previewedWords));
-                showAdminPopup(`Thành công! Đã lưu bộ đề mới với ${previewedWords.length} từ làm đề mặc định.`);
-                resetAdminView();
-            } else {
-                showAdminPopup('Không có dữ liệu đề để lưu.');
-            }
-        });
-        
-        function handleFilePreview(files) {
-            statusDiv.textContent = 'Đang xử lý file...';
-            
-            const filePromises = Array.from(files).map(file => {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = event => {
-                        mammoth.convertToHtml({ arrayBuffer: event.target.result })
-                            .then(result => resolve(result.value))
-                            .catch(reject);
-                    };
-                    reader.onerror = reject;
-                    reader.readAsArrayBuffer(file);
-                });
-            });
-
-            Promise.all(filePromises)
-                .then(htmlResults => {
-                    const uniqueWordsInFile = new Set();
-                    let tempWords = [];
-                    htmlResults.forEach(html => {
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = html;
-                        const table = tempDiv.querySelector('table');
-                        if (table) {
-                            const rows = table.querySelectorAll('tr');
-                            for (let i = 1; i < rows.length; i++) {
-                                const cells = rows[i].querySelectorAll('td, th');
-                                if (cells.length >= 2) {
-                                    const eng = cells[0].innerText.trim();
-                                    const vie = cells[1].innerText.trim();
-                                    if (eng && vie && !uniqueWordsInFile.has(eng)) {
-                                        uniqueWordsInFile.add(eng);
-                                        tempWords.push({ en: eng, vi: vie });
-                                    }
-                                }
-                            }
-                        }
-                    });
-
-                    if (tempWords.length < 4) {
-                        throw new Error("File phải chứa ít nhất 4 từ vựng hợp lệ để tạo bản xem trước.");
-                    }
-                    
-                    previewedWords = tempWords;
-                    generateDemoQuiz(previewedWords);
-                    
-                    demoContainer.classList.remove('hidden');
-                    previewBtn.classList.add('hidden');
-                    saveBtn.classList.remove('hidden');
-                    statusDiv.textContent = 'Bản xem trước đã sẵn sàng. Hãy kiểm tra và lưu lại.';
-                })
-                .catch(handleError);
-        }
-
-        function generateDemoQuiz(wordList) {
-            let quiz = [];
-            let answers = [];
-            const allMeanings = wordList.map(item => item.vi);
-
-            // Shuffle and take up to 10 questions for the demo
-            let questionsPool = [...wordList].sort(() => 0.5 - Math.random()).slice(0, 10);
-            
-            questionsPool.forEach(({ en: correctWord, vi: correctMeaning }, i) => {
-                const otherMeanings = allMeanings.filter(meaning => meaning !== correctMeaning);
-                let wrongOptions = [];
-                
-                // Get 3 unique wrong options
-                while(wrongOptions.length < 3 && otherMeanings.length > 0){
-                    const randomIndex = Math.floor(Math.random() * otherMeanings.length);
-                    wrongOptions.push(otherMeanings.splice(randomIndex, 1)[0]);
-                }
-                 // If not enough unique meanings, fill with placeholders
-                while(wrongOptions.length < 3){
-                    wrongOptions.push("Đáp án không hợp lệ");
-                }
-                
-                const choices = [...wrongOptions, correctMeaning];
-                choices.sort(() => Math.random() - 0.5); 
-
-                let questionStr = `Câu ${i + 1}: Từ '${correctWord}' có nghĩa là gì?\n`;
-                const options = ['A', 'B', 'C', 'D'];
-                choices.forEach((choice, index) => {
-                    questionStr += `  ${options[index]}. ${choice}\n`;
-                });
-
-                quiz.push(questionStr);
-
-                const correctOptionChar = options[choices.indexOf(correctMeaning)];
-                answers.push(`Câu ${i + 1}: ${correctOptionChar}`);
-            });
-
-            demoQuizOutput.textContent = quiz.join('\n');
-            demoAnswersOutput.textContent = answers.join('\n');
-        }
-        
-        function showAdminPopup(message) {
-            popupMessage.textContent = message;
-            popupOverlay.classList.remove('hidden');
-        }
-        function hideAdminPopup() {
-            popupOverlay.classList.add('hidden');
-        }
-        function handleError(error) {
-            console.error(error);
-            showAdminPopup(`Lỗi: ${error.message}`);
-            statusDiv.textContent = ''; 
-        }
-        popupCloseBtn.addEventListener('click', hideAdminPopup);
-        popupOverlay.addEventListener('click', (e) => { if (e.target === popupOverlay) hideAdminPopup(); });
-    }
-
-    // =================================================================
-    //                     QUIZ PAGE LOGIC
-    // =================================================================
-    function initializeQuiz(showPage) {
+    function initializeQuiz() {
         let currentQuestions = [];
         let currentQuestionIndex = 0;
         let scoreCount = 0;
         const synth = window.speechSynthesis;
         let femaleVoice = null;
 
-        const startScreen = document.getElementById('startScreen');
+        const weekSelectionScreen = document.getElementById('weekSelectionScreen');
+        const quizPage = document.getElementById('quizPage');
         const quizScreenContent = document.getElementById('quizScreenContent');
-        const startBtn = document.getElementById('startBtn');
-        const currentDateEl = document.getElementById('currentDate');
-        const playCountEl = document.getElementById('playCount');
-        const quizLogoutBtn = document.getElementById('quizLogoutBtn');
+        const backToWeeksBtn = document.getElementById('backToWeeksBtn');
         
         const progress = document.getElementById('progress');
         const score = document.getElementById('score');
@@ -527,6 +240,12 @@
         const quizErrorPopup = document.getElementById('quizErrorPopup');
         const quizErrorMessage = document.getElementById('quizErrorMessage');
         const closeQuizErrorPopup = document.getElementById('closeQuizErrorPopup');
+
+        speakBtn.addEventListener('click', () => {
+            if (questionEl.textContent) {
+                speak(questionEl.textContent);
+            }
+        });
 
         function showQuizErrorPopup(message) {
             quizErrorMessage.textContent = message;
@@ -554,29 +273,6 @@
             speechSynthesis.onvoiceschanged = loadVoices;
         }
 
-        function getTodayString() {
-            const today = new Date();
-            return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-        }
-
-        function updatePlayCount() {
-            const todayKey = `quizPlayCount_${getTodayString()}`;
-            const count = localStorage.getItem(todayKey) || 0;
-            playCountEl.textContent = count;
-        }
-
-        function incrementPlayCount() {
-            const todayKey = `quizPlayCount_${getTodayString()}`;
-            let count = parseInt(localStorage.getItem(todayKey) || 0);
-            localStorage.setItem(todayKey, count + 1);
-            updatePlayCount();
-        }
-        
-        const today = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        currentDateEl.textContent = today.toLocaleDateString('vi-VN', options);
-        updatePlayCount();
-
         function speak(text) {
             if (synth.speaking) synth.cancel();
             const utterThis = new SpeechSynthesisUtterance(text);
@@ -594,21 +290,26 @@
             return array;
         }
         
-        function startGame() {
-            const defaultVocab = JSON.parse(localStorage.getItem('defaultVocabulary')) || [];
-            
-            if (defaultVocab.length < 4) {
-                showQuizErrorPopup("Bộ đề mặc định cần ít nhất 4 từ để bắt đầu. Vui lòng yêu cầu admin tạo đề mới.");
+        window.startQuiz = function() {
+            const vocabularyList = window.currentQuizVocabulary || [];
+            if (vocabularyList.length < 4) {
+                showQuizErrorPopup("Không đủ từ vựng để tạo bài kiểm tra. Cần ít nhất 4 từ.");
                 return;
             }
-
-            startScreen.classList.add('hidden');
-            quizScreenContent.classList.remove('hidden');
+            
+            weekSelectionScreen.classList.add('hidden');
+            quizPage.classList.remove('hidden');
             
             scoreCount = 0;
             currentQuestionIndex = 0;
             
-            currentQuestions = shuffleArray([...defaultVocab]).slice(0, 10);
+            currentQuestions = shuffleArray([...vocabularyList]).slice(0, 10);
+            if (currentQuestions.length < 4) {
+                 showQuizErrorPopup(`Không đủ từ vựng (${currentQuestions.length}) để tạo bài kiểm tra. Cần ít nhất 4 từ.`);
+                 goToHome();
+                 return;
+            }
+
 
             displayQuestion();
         }
@@ -623,7 +324,7 @@
             answersEl.innerHTML = '';
             
             let options = [currentQuestion];
-            const allVocabForOptions = JSON.parse(localStorage.getItem('defaultVocabulary'));
+            const allVocabForOptions = window.currentQuizVocabulary;
             while (options.length < 4 && options.length < allVocabForOptions.length) {
                 const randomWord = allVocabForOptions[Math.floor(Math.random() * allVocabForOptions.length)];
                 if (!options.some(opt => opt.en === randomWord.en)) {
@@ -677,7 +378,6 @@
         }
 
         function endGame() {
-            incrementPlayCount();
             const endPopupEl = document.getElementById('endPopup');
             const scorePercentage = currentQuestions.length > 0 ? (scoreCount / currentQuestions.length) * 100 : 0;
 
@@ -715,17 +415,10 @@
             endPopup.classList.add('hidden');
             quizErrorPopup.classList.add('hidden');
             
-            quizScreenContent.classList.add('hidden');
-            startScreen.classList.remove('hidden');
-            updatePlayCount();
+            quizPage.classList.add('hidden');
+            weekSelectionScreen.classList.remove('hidden');
         }
         
-        startBtn.addEventListener('click', startGame);
-        speakBtn.addEventListener('click', () => speak(questionEl.textContent));
-        quizLogoutBtn.addEventListener('click', () => {
-             goToHome();
-             showPage('loginPage');
-        });
         
         closeWelcomeBtn.addEventListener('click', () => {
             popupContainer.classList.add('hidden');
@@ -741,9 +434,11 @@
         replayBtn.addEventListener('click', () => {
             popupContainer.classList.add('hidden');
             endPopup.classList.add('hidden');
-            startGame();
+            window.startQuiz();
         });
+        
         homeBtn.addEventListener('click', goToHome);
+        backToWeeksBtn.addEventListener('click', goToHome);
     }
 </script>
 
