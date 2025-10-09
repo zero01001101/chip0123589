@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chíp học English</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;700&display=swap" rel="stylesheet">
@@ -45,10 +43,8 @@
 </head>
 <body class="bg-gradient-to-br from-rose-100 to-pink-200 min-h-screen flex items-center justify-center p-4">
 
-    <!-- Container chính -->
     <main class="w-full max-w-2xl mx-auto text-center">
         
-        <!-- Trái tim SVG -->
         <div class="h-auto flex justify-center items-center mb-4 heart-animation">
              <svg class="w-72 h-72 sm:w-80 sm:h-80 svg-heart" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -61,16 +57,12 @@
             </svg>
         </div>
 
-        <!-- Tiêu đề -->
         <h1 class="font-pacifico text-5xl md:text-6xl text-pink-600 mb-8 drop-shadow-lg">
             Chíp học English
         </h1>
 
-        <!-- Các nút bấm -->
         <div class="space-y-6">
-            <!-- Container cho 3 nút trái tim nằm ngang -->
             <div class="flex flex-col sm:flex-row items-center justify-center sm:space-x-4 space-y-6 sm:space-y-0">
-                 <!-- Nút Vocabulary -->
                 <a href="https://docs.google.com/document/d/1hf-oz3-28Qy4peWvdJUCQIBZDut4n5HQjK9GICptHwY/edit?usp=sharing" target="_blank" rel="noopener noreferrer" 
                    class="group transition-transform transform hover:scale-105">
                     <svg viewBox="0 0 24 24" class="w-40 h-40 drop-shadow-lg">
@@ -79,7 +71,6 @@
                     </svg>
                 </a>
                 
-                <!-- Nút Exercises -->
                 <a href="main.html" target="_blank" rel="noopener noreferrer" 
                    class="group transition-transform transform hover:scale-105">
                     <svg viewBox="0 0 24 24" class="w-40 h-40 drop-shadow-lg">
@@ -88,30 +79,26 @@
                     </svg>
                 </a>
 
-                <!-- Nút Thời khóa biểu (mở popup) -->
-                <a href="timetableChip.html" id="open-modal-btn"
+                <a href="timetableChip.html" target="_blank" rel="noopener noreferrer"
                    class="group transition-transform transform hover:scale-105">
                     <svg viewBox="0 0 24 24" class="w-40 h-40 drop-shadow-lg">
                         <path class="fill-pink-500 group-hover:fill-pink-600 transition-colors" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                        <text x="12" y="13" text-anchor="middle" dominant-baseline="central" font-size="2.5" font-family="Pacifico" class="fill-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">
+                         <text x="12" y="13" text-anchor="middle" dominant-baseline="central" font-size="2.5" font-family="Pacifico" class="fill-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">
                             <tspan x="12" dy="-0.6em">Thời khóa</tspan>
                             <tspan x="12" dy="1.2em">biểu</tspan>
-                        </text>
+                         </text>
                     </svg>
                 </a>
             </div>
 
-            <!-- Tiktok Info -->
             <div class="pt-8">
-                <p class="font-pacifico text-2xl text-pink-600 drop-shadow-md">Tiktok: @chip012358</p>
+                 <p class="font-pacifico text-2xl text-pink-600 drop-shadow-md">Tiktok: @chip012358</p>
             </div>
 
         </div>
     </main>
 
-    <!-- Popup Chào mừng -->
     <div id="welcome-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-        <!-- Nội dung popup -->
         <div class="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center relative">
             <h2 class="font-pacifico text-4xl text-pink-600 mb-4 drop-shadow-sm">Thông báo</h2>
             <p class="text-xl text-gray-700 mb-6">
@@ -123,59 +110,20 @@
         </div>
     </div>
     
-    <!-- Popup Thời khóa biểu -->
-    <div id="schedule-modal" class="modal fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden z-50">
-        <!-- Nội dung popup -->
-        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-xs w-full text-center relative font-pacifico">
-            <!-- Nút đóng -->
-            <button id="close-modal-btn" class="absolute top-2 right-3 text-gray-400 hover:text-gray-800 text-4xl font-light">&times;</button>
-            
-            <h2 class="text-4xl text-pink-600 mb-6 drop-shadow-sm">Chọn TKB</h2>
-            
-            <div class="space-y-4">
-                <!-- Button của Chíp -->
-                <a href="timetableChip.html" target="_blank" rel="noopener noreferrer" class="block w-full bg-pink-500 text-white py-3 px-4 rounded-full text-2xl hover:bg-pink-600 transition-colors shadow-md">
-                    của Chíp
-                </a>
-            </div>
-        </div>
-    </div>
-    
     <script>
-        const openModalBtn = document.getElementById('open-modal-btn');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const modal = document.getElementById('schedule-modal');
+        // --- KHỐI MÃ JAVASCRIPT CỦA POPUP "THỜI KHÓA BIỂU" ĐÃ BỊ XÓA ---
 
-        // Mở popup
-        openModalBtn.addEventListener('click', (e) => {
-            e.preventDefault(); 
-            modal.classList.remove('hidden');
-        });
-
-        // Đóng popup bằng nút X
-        closeModalBtn.addEventListener('click', () => {
-            modal.classList.add('hidden');
-        });
-
-        // Đóng popup khi nhấn ra ngoài
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.classList.add('hidden');
-            }
-        });
-
+        // Mã Javascript cho popup chào mừng vẫn giữ nguyên
         const welcomeModal = document.getElementById('welcome-modal');
         const okWelcomeBtn = document.getElementById('ok-welcome-btn');
 
         const hideWelcomeModal = () => {
             if (!welcomeModal) return;
-
             // Lắng nghe sự kiện khi hiệu ứng transition kết thúc, sau đó mới ẩn popup.
             // { once: true } đảm bảo listener sẽ tự động bị xóa sau khi chạy 1 lần.
             welcomeModal.addEventListener('transitionend', () => {
                 welcomeModal.classList.add('hidden');
             }, { once: true });
-
             // Bắt đầu hiệu ứng mờ dần bằng cách đổi opacity về 0.
             welcomeModal.style.opacity = '0';
         };
@@ -188,4 +136,3 @@
 
 </body>
 </html>
-
