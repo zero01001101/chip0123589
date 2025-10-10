@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="bg-gradient-to-br from-rose-100 to-pink-200">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,18 +13,30 @@
         body, html {
             font-family: 'Inter', sans-serif;
             width: 100%;
-            min-height: 100vh; /* --- SỬA LỖI MÀU: Đảm bảo nền phủ toàn bộ màn hình --- */
-            overflow-x: hidden; /* Ngăn cuộn ngang */
+            min-height: 100%; 
+            overflow-x: hidden; 
         }
         
         body {
-            /* Mặc định cho phép cuộn, JS sẽ xử lý khi cần khóa */
             overflow-y: auto; 
+            background-color: transparent; 
         }
 
         .font-pacifico {
             font-family: 'Pacifico', cursive;
         }
+        
+        /* --- CSS CHO HIỆU ỨNG BLUR NỀN --- */
+        #main-content {
+            /* Thêm transition cho filter để hiệu ứng mờ mượt mà */
+            transition: opacity 0.7s ease-in-out, filter 0.3s ease-in-out;
+        }
+
+        .is-blurred {
+            filter: blur(5px);
+            pointer-events: none; /* Ngăn tương tác với nền khi bị mờ */
+        }
+
 
         /* Animation cho trái tim lớn ở giữa */
         @keyframes float {
@@ -82,7 +94,7 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* --- SỬA LỖI THANH CUỘN (SCROLLBAR) --- */
+        /* --- CSS CHO THANH CUỘN (SCROLLBAR) --- */
         /* Webkit browsers (Chrome, Safari, Edge) */
         ::-webkit-scrollbar {
             width: 8px;
@@ -91,13 +103,13 @@
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background-color: rgba(236, 72, 153, 0); /* Mặc định trong suốt */
+            background-color: rgba(236, 72, 153, 0); 
             border-radius: 10px;
-            transition: background-color 0.3s ease-out; /* Thêm hiệu ứng mờ */
+            transition: background-color 0.3s ease-out; 
         }
-        /* Class này sẽ được thêm/xóa bằng JS */
+        
         .scrolling::-webkit-scrollbar-thumb {
-            background-color: rgba(236, 72, 153, 0.6); /* Hiện rõ khi đang cuộn */
+            background-color: rgba(236, 72, 153, 0.6); 
         }
 
         /* Firefox */
@@ -107,7 +119,7 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-rose-100 to-pink-200">
+<body>
 
     <!-- === MÀN HÌNH LOADING === -->
     <div id="loading-screen" class="fixed inset-0 bg-gradient-to-br from-rose-100 to-pink-200 flex flex-col items-center justify-center z-[100] transition-opacity duration-500 ease-in-out">
@@ -116,7 +128,7 @@
     </div>
 
     <!-- === NỘI DUNG CHÍNH === -->
-    <main id="main-content" class="w-full max-w-4xl mx-auto text-center hidden opacity-0 transition-opacity duration-700 ease-in-out p-4 sm:p-6">
+    <main id="main-content" class="w-full max-w-4xl mx-auto text-center hidden opacity-0 p-4 sm:p-6">
         
         <div class="h-auto flex justify-center items-center my-4 heart-animation">
              <svg class="w-60 h-60 sm:w-80 sm:h-80 svg-heart" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -199,7 +211,6 @@
             const loadingScreen = document.getElementById('loading-screen');
             const mainContent = document.getElementById('main-content');
             
-            // Khóa cuộn khi màn hình loading đang hiển thị
             document.body.style.overflowY = 'hidden';
 
             setTimeout(() => {
@@ -207,7 +218,7 @@
                     loadingScreen.style.opacity = '0';
                     loadingScreen.addEventListener('transitionend', () => {
                         loadingScreen.style.display = 'none';
-                        document.body.style.overflowY = 'auto'; // Cho phép cuộn lại
+                        document.body.style.overflowY = 'auto'; 
 
                         if (mainContent) {
                             mainContent.classList.remove('hidden');
@@ -216,7 +227,11 @@
 
                         const welcomeModal = document.getElementById('welcome-modal');
                         if (welcomeModal) {
-                            setTimeout(() => welcomeModal.classList.add('is-visible'), 300);
+                            // Hiển thị popup và làm mờ nền
+                            setTimeout(() => {
+                                welcomeModal.classList.add('is-visible');
+                                mainContent.classList.add('is-blurred');
+                            }, 300);
                         }
 
                     }, { once: true });
@@ -229,7 +244,8 @@
             const hideWelcomeModal = () => {
                 const welcomeModal = document.getElementById('welcome-modal');
                 if (!welcomeModal) return;
-                welcomeModal.classList.remove('is-visible');
+                mainContent.classList.remove('is-blurred'); // Xóa hiệu ứng mờ
+                welcomeModal.classList.remove('is-visible'); // Ẩn popup
             };
             
             if (okWelcomeBtn) {
@@ -237,27 +253,43 @@
             }
 
             const createHeartExplosion = (event) => {
-                // Code hiệu ứng nổ tim giữ nguyên...
+                const button = event.currentTarget;
+                const rect = button.getBoundingClientRect();
+                const originX = rect.left + rect.width / 2;
+                const originY = rect.top + rect.height / 2;
+                const particleCount = 20;
+
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.innerHTML = '💖';
+                    particle.classList.add('heart-particle');
+                    document.body.appendChild(particle);
+                    particle.style.left = `${originX}px`;
+                    particle.style.top = `${originY}px`;
+                    const angle = Math.random() * 360;
+                    const radius = Math.random() * 150 + 50;
+                    const x = Math.cos(angle * (Math.PI / 180)) * radius;
+                    const y = Math.sin(angle * (Math.PI / 180)) * radius;
+                    particle.style.setProperty('--x', `${x}px`);
+                    particle.style.setProperty('--y', `${y}px`);
+                    particle.addEventListener('animationend', () => {
+                        particle.remove();
+                    });
+                }
             };
             
             heartButtons.forEach(button => {
                 button.addEventListener('click', createHeartExplosion);
             });
 
-            // --- LOGIC MỚI CHO THANH CUỘN TỰ ẨN ---
             let scrollTimeout;
             window.addEventListener('scroll', () => {
-                // Thêm class để thanh cuộn hiện ra
                 document.body.classList.add('scrolling');
-                
-                // Xóa timeout cũ nếu có
                 clearTimeout(scrollTimeout);
-                
-                // Đặt timeout mới để ẩn thanh cuộn sau 1.5s không cuộn
                 scrollTimeout = setTimeout(() => {
                     document.body.classList.remove('scrolling');
                 }, 1500);
-            }, { passive: true }); // Tối ưu hóa hiệu năng
+            }, { passive: true });
         });
     </script>
 
