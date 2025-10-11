@@ -72,24 +72,20 @@
 <body class="overflow-hidden">
 
     <div id="app-container">
-        <!-- Màn hình chờ (Splash Screen) -->
         <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#FFF0F5] transition-opacity duration-500 ease-in-out">
             <h1 class="text-7xl font-bold text-pink-500 mb-6">Zero</h1>
             <div class="loader"></div>
         </div>
 
-        <!-- Màn hình chính -->
         <main id="main-content" class="hidden h-screen bg-[#FFF0F5] p-4 md:p-8 overflow-y-auto">
             <div class="max-w-6xl mx-auto">
                 <h1 class="text-3xl font-bold text-pink-600 text-center mb-8">Chọn một chủ đề để học</h1>
                 <div id="topic-grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                    <!-- Topic buttons will be inserted here by JS -->
-                </div>
+                    </div>
             </div>
         </main>
     </div>
 
-    <!-- Popup chào mừng -->
     <div id="welcome-popup-backdrop" class="fixed inset-0 bg-black bg-opacity-40 items-center justify-center z-[70] popup-hidden">
         <div id="welcome-popup" class="bg-pink-50 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center transform opacity-0 scale-95 transition-all duration-300">
             <h2 class="text-2xl font-bold text-pink-600 mb-4">Xin chào!</h2>
@@ -98,7 +94,6 @@
         </div>
     </div>
 
-    <!-- Popup Lựa chọn Topic -->
     <div id="topic-popup-backdrop" class="fixed inset-0 bg-black bg-opacity-30 items-center justify-center z-[80] popup-hidden" style="backdrop-filter: blur(0px); transition: all 0.3s ease;">
         <div id="topic-popup" class="bg-pink-50 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center transition-all duration-300 transform opacity-0 scale-95">
             <div class="flex items-center justify-center mb-6">
@@ -116,7 +111,6 @@
         </div>
     </div>
 
-    <!-- Vocabulary List Popup -->
     <div id="vocabulary-popup-backdrop" class="fixed inset-0 bg-black bg-opacity-30 items-center justify-center z-[90] popup-hidden" style="backdrop-filter: blur(0px); transition: all 0.3s ease;">
         <div id="vocabulary-popup" class="bg-pink-50 rounded-2xl shadow-2xl p-6 md:p-8 max-w-3xl w-full mx-4 flex flex-col transition-all duration-300 transform opacity-0 scale-95">
             <div class="flex items-center justify-between mb-4 flex-shrink-0">
@@ -130,7 +124,6 @@
         </div>
     </div>
 
-    <!-- Word Detail Popup -->
     <div id="word-detail-popup-backdrop" class="fixed inset-0 bg-black bg-opacity-40 items-center justify-center z-[100] popup-hidden" style="backdrop-filter: blur(0px); transition: all 0.3s ease;">
         <div id="word-detail-popup" class="bg-pink-50 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 flex flex-col transition-all duration-300 transform opacity-0 scale-95 text-center relative">
             <button id="close-word-detail-popup-btn" class="absolute top-3 right-4 text-gray-400 hover:text-pink-500 text-4xl font-light">&times;</button>
@@ -148,7 +141,17 @@
         </div>
     </div>
     
-    <!-- Test Popup -->
+    <div id="speak-options-popup-backdrop" class="fixed inset-0 bg-black bg-opacity-40 items-center justify-center z-[105] popup-hidden" style="backdrop-filter: blur(0px); transition: all 0.3s ease;">
+        <div id="speak-options-popup" class="bg-pink-50 rounded-2xl shadow-2xl p-8 max-w-xs w-full mx-4 flex flex-col items-center text-center transition-all duration-300 transform opacity-0 scale-95 relative">
+            <button id="close-speak-options-popup-btn" class="absolute top-3 right-4 text-gray-400 hover:text-pink-500 text-4xl font-light">&times;</button>
+            <h3 class="text-2xl font-bold text-pink-600 mb-6">Tùy chọn đọc</h3>
+            <div class="flex flex-col space-y-4 w-full">
+                <button id="speak-slow-btn" class="animated-btn py-3">Đọc chậm</button>
+                <button id="speak-fast-btn" class="animated-btn py-3">Đọc nhanh</button>
+            </div>
+        </div>
+    </div>
+
     <div id="test-popup-backdrop" class="fixed inset-0 bg-black bg-opacity-30 items-center justify-center z-[110] popup-hidden" style="backdrop-filter: blur(0px); transition: all 0.3s ease;">
         <div class="bg-pink-50 rounded-2xl shadow-2xl p-6 md:p-8 max-w-lg w-full mx-4 flex flex-col transition-all duration-300 transform opacity-0 scale-95">
             <div class="flex justify-between items-center mb-4">
@@ -159,24 +162,20 @@
                 <p class="text-2xl font-bold text-gray-800" id="question-text">Question text goes here</p>
             </div>
             <div id="answer-options" class="grid grid-cols-2 gap-4 mb-6">
-                <!-- Answer buttons go here -->
-            </div>
+                </div>
             <button id="submit-test-btn" class="animated-btn w-full py-3">Nộp bài</button>
         </div>
     </div>
 
-    <!-- Review Answers Popup -->
     <div id="review-popup-backdrop" class="fixed inset-0 bg-black bg-opacity-40 items-center justify-center z-[120] popup-hidden" style="backdrop-filter: blur(0px); transition: all 0.3s ease;">
         <div class="bg-pink-50 rounded-2xl shadow-2xl p-6 md:p-8 max-w-2xl w-full mx-4 flex flex-col transition-all duration-300 transform opacity-0 scale-95">
             <h2 class="text-2xl font-bold text-pink-600 text-center mb-4">Xem lại bài làm</h2>
             <div id="review-list" class="space-y-3 overflow-y-auto pr-2 bg-white/50 p-4 rounded-lg" style="max-height: 60vh;">
-                <!-- Review items go here -->
-            </div>
+                </div>
             <button id="close-review-popup-btn" class="animated-btn w-full py-3 mt-6">Đóng</button>
         </div>
     </div>
 
-    <!-- Result Popup -->
     <div id="result-popup-backdrop" class="fixed inset-0 bg-black bg-opacity-40 items-center justify-center z-[130] popup-hidden" style="backdrop-filter: blur(0px); transition: all 0.3s ease;">
         <div class="bg-pink-50 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 flex flex-col items-center text-center transition-all duration-300 transform opacity-0 scale-95">
             <h2 class="text-3xl font-bold text-pink-600 mb-2">Kết quả</h2>
@@ -1324,7 +1323,7 @@
 				{"en": "worry", "type": "v.", "vi": "lo lắng", "example": "Don't worry, everything will be fine.", "example_vi": "Đừng lo lắng, mọi chuyện rồi sẽ ổn thôi."}
 			]
         };
-        
+
         const style = document.createElement('style');
         style.innerHTML = `
             .topic-btn, .vocab-card-btn {
@@ -1343,17 +1342,32 @@
         `;
         document.head.appendChild(style);
 
-        // --- UTILITY FUNCTIONS (unchanged) ---
+        // --- UTILITY FUNCTIONS ---
         let voices = [];
         function populateVoiceList() { voices = speechSynthesis.getVoices(); }
         populateVoiceList();
         if (speechSynthesis.onvoiceschanged !== undefined) { speechSynthesis.onvoiceschanged = populateVoiceList; }
-        function speak(text) {
-            if (speechSynthesis.speaking) { return; }
+
+        function speak(text, rate = 1) {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
             const utterance = new SpeechSynthesisUtterance(text);
-            const femaleVoice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Google US English')));
-            if (femaleVoice) utterance.voice = femaleVoice;
-            speechSynthesis.speak(utterance);
+            
+            // Tìm giọng nữ 'en-US' một cách nghiêm ngặt
+            const femaleVoice = voices.find(v =>
+                v.lang === 'en-US' &&
+                (v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Google US English'))
+            );
+
+            if (femaleVoice) {
+                utterance.voice = femaleVoice;
+                utterance.rate = rate; // Đặt tốc độ đọc
+                speechSynthesis.speak(utterance);
+            } else {
+                console.warn("Không tìm thấy giọng đọc nữ 'en-US' phù hợp.");
+                // alert("Không tìm thấy giọng đọc nữ tiếng Anh phù hợp trên thiết bị của bạn.");
+            }
         }
 
         const canvas = document.getElementById('particleCanvas');
@@ -1385,8 +1399,7 @@
         function createExplosion(x, y, w, h) {
             const count = Math.min(50, Math.max(30, Math.floor((w * h) / 100)));
             for (let i = 0; i < count; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = 2.0 + Math.random() * 4.5;
+                const angle = Math.random() * Math.PI * 2; const speed = 2.0 + Math.random() * 4.5;
                 particles.push({
                     x: x + (Math.random() - 0.5) * w * 0.7, y: y + (Math.random() - 0.5) * h * 0.7,
                     vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, size: 10 + Math.random() * 12, alpha: 1, color: pickHeartColor(),
@@ -1434,7 +1447,10 @@
             const vocabPopupIcon = document.getElementById('vocabulary-popup-icon');
 
             const wordDetailPopupBackdrop = document.getElementById('word-detail-popup-backdrop');
-
+            const speakOptionsPopupBackdrop = document.getElementById('speak-options-popup-backdrop');
+            const speakSlowBtn = document.getElementById('speak-slow-btn');
+            const speakFastBtn = document.getElementById('speak-fast-btn');
+            
             const showTestBtn = document.getElementById('show-test-btn');
             const testPopupBackdrop = document.getElementById('test-popup-backdrop');
             const questionProgress = document.getElementById('question-progress');
@@ -1452,6 +1468,7 @@
             const closeResultPopupBtn = document.getElementById('close-result-popup-btn');
 
             let currentTopic = null;
+            let currentWordToSpeak = '';
             let quizQuestions = [];
             let userAnswers = [];
             let questionTypes = [];
@@ -1477,7 +1494,7 @@
                 popup.style.transform = 'scale(0.95)';
                 setTimeout(() => { backdrop.classList.remove('popup-visible'); backdrop.classList.add('popup-hidden'); }, 300);
             };
-            
+
             // --- Test Logic ---
             function startTest() {
                 const words = vocabularyData[currentTopic];
@@ -1488,10 +1505,8 @@
                 userAnswers = new Array(10).fill(null);
                 questionTypes = [];
                 currentQuestionIndex = 0;
-
                 const shuffledWords = [...words].sort(() => 0.5 - Math.random());
                 quizQuestions = shuffledWords.slice(0, 10);
-                
                 displayQuestion();
                 closePopup(topicPopupBackdrop);
                 setTimeout(() => showPopup(testPopupBackdrop), 350);
@@ -1501,13 +1516,10 @@
                 const questionData = quizQuestions[currentQuestionIndex];
                 const isEnToVi = Math.random() < 0.5;
                 questionTypes[currentQuestionIndex] = isEnToVi;
-
                 questionProgress.textContent = `Câu ${currentQuestionIndex + 1}/10`;
                 questionText.textContent = isEnToVi ? questionData.en : questionData.vi;
-                
                 const correctAnswer = isEnToVi ? questionData.vi : questionData.en;
                 const options = generateOptions(questionData, correctAnswer, isEnToVi);
-
                 answerOptionsContainer.innerHTML = '';
                 options.forEach(optionText => {
                     const button = document.createElement('button');
@@ -1516,7 +1528,6 @@
                     button.addEventListener('click', () => selectAnswer(button, optionText));
                     answerOptionsContainer.appendChild(button);
                 });
-                
                 submitTestBtn.textContent = (currentQuestionIndex === 9) ? 'Nộp bài' : 'Câu tiếp theo';
             }
 
@@ -1524,7 +1535,6 @@
                 const allWords = vocabularyData[currentTopic];
                 let wrongAnswers = new Set();
                 const optionPool = allWords.filter(w => w.en !== correctWord.en);
-                
                 while (wrongAnswers.size < 3) {
                     const randomWord = optionPool[Math.floor(Math.random() * optionPool.length)];
                     const wrongOption = isEnToVi ? randomWord.vi : randomWord.en;
@@ -1532,7 +1542,6 @@
                         wrongAnswers.add(wrongOption);
                     }
                 }
-                
                 const options = [correctAnswer, ...wrongAnswers];
                 return options.sort(() => 0.5 - Math.random());
             }
@@ -1563,10 +1572,8 @@
                     const correctAnswer = isEnToVi ? question.vi : question.en;
                     const isCorrect = userAnswer === correctAnswer;
                     if(isCorrect) score++;
-
                     const reviewItem = document.createElement('div');
                     reviewItem.className = `p-3 rounded-lg border-l-4 ${isCorrect ? 'bg-green-100 border-green-500' : 'bg-red-100 border-red-500'}`;
-                    
                     let questionHTML = `<p class="font-semibold text-gray-700">Câu ${i+1}: ${isEnToVi ? question.en : question.vi}</p>`;
                     if(isCorrect) {
                         questionHTML += `<p class="text-green-700">Bạn đã chọn: ${userAnswer} ✅</p>`;
@@ -1579,24 +1586,19 @@
                     reviewItem.innerHTML = questionHTML;
                     reviewList.appendChild(reviewItem);
                 }
-
-                // Prepare final result popup
                 let message = "";
                 if (score <= 3) message = "Vui lòng làm lại!";
                 else if (score <= 6) message = "Chưa ổn!";
                 else if (score <= 9) message = "Tạm ổn rồi!";
                 else message = "Chíp thối!";
-
                 scoreText.textContent = `${score}/10`;
                 resultMessage.textContent = message;
-
-                // Show both popups
                 closePopup(testPopupBackdrop);
                 setTimeout(() => {
                     showPopup(reviewPopupBackdrop);
                     setTimeout(() => {
                         showPopup(resultPopupBackdrop);
-                    }, 100); // A very short delay for visual effect
+                    }, 100);
                 }, 350);
             }
             
@@ -1632,14 +1634,14 @@
                     renderTopics();
                     showPopup(welcomePopupBackdrop);
                 }, 500);
-            }, 2000);
+            }, 1500);
 
             closePopupButton.addEventListener('click', async (e) => {
                 await playButtonAnimation(e.currentTarget);
                 setTimeout(() => closePopup(welcomePopupBackdrop), 150);
                 document.body.classList.remove('overflow-hidden');
             });
-            
+
             showVocabBtn.addEventListener('click', async (e) => {
                 await playButtonAnimation(e.currentTarget);
                 const words = vocabularyData[currentTopic];
@@ -1661,10 +1663,15 @@
                         document.getElementById('word-example-en').textContent = word.example;
                         document.getElementById('word-example-vi').textContent = word.example_vi;
                         
+                        currentWordToSpeak = word.en;
+
                         const speakBtn = document.getElementById('speak-btn');
                         const newSpeakBtn = speakBtn.cloneNode(true);
                         speakBtn.parentNode.replaceChild(newSpeakBtn, speakBtn);
-                        newSpeakBtn.addEventListener('click', () => speak(word.en));
+                        
+                        newSpeakBtn.addEventListener('click', () => {
+                            showPopup(speakOptionsPopupBackdrop);
+                        });
                         
                         setTimeout(() => showPopup(wordDetailPopupBackdrop), 150);
                     });
@@ -1672,17 +1679,18 @@
                 });
                 vocabPopupTitle.textContent = currentTopic;
                 vocabPopupIcon.textContent = topicPopupIcon.textContent;
-
                 closePopup(topicPopupBackdrop);
                 setTimeout(() => showPopup(vocabularyPopupBackdrop), 350);
             });
+
+            speakSlowBtn.addEventListener('click', (e) => playButtonAnimation(e.currentTarget).then(() => speak(currentWordToSpeak, 0.5)));
+            speakFastBtn.addEventListener('click', (e) => playButtonAnimation(e.currentTarget).then(() => speak(currentWordToSpeak, 1.2)));
 
             showTestBtn.addEventListener('click', (e) => playButtonAnimation(e.currentTarget).then(startTest));
             submitTestBtn.addEventListener('click', handleSubmit);
             
             closeReviewPopupBtn.addEventListener('click', () => {
                 closePopup(reviewPopupBackdrop);
-                // If result is also open, close it too for convenience
                 if (resultPopupBackdrop.classList.contains('popup-visible')) {
                     closePopup(resultPopupBackdrop);
                 }
@@ -1700,4 +1708,3 @@
     </script>
 </body>
 </html>
-
