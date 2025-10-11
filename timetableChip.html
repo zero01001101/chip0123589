@@ -7,32 +7,314 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Quicksand', sans-serif;
+            background-color: #FFF0F5;
         }
         .handwriting-font {
             font-family: 'Dancing Script', cursive;
         }
+        .popup-hidden { display: none; opacity: 0; }
+        .popup-visible { display: flex; opacity: 1; transition: opacity 0.3s ease-out; }
+        #app-container.blurred { filter: blur(5px); }
+        .animated-btn {
+            border: 0;
+            color: white;
+            font-weight: 700;
+            border-radius: 999px;
+            cursor: pointer;
+            outline: none;
+            background: linear-gradient(135deg, #f9a8d4, #ec4899);
+            box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.3), inset 0 -2px 0 rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        .animated-btn:hover {
+            background: linear-gradient(135deg, #fbcfe8, #f472b6);
+            box-shadow: 0 12px 28px -5px rgba(236, 72, 153, 0.4), inset 0 -2px 0 rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        #particleCanvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .loader {
+            border: 4px solid #fce7f3; /* Light pink border */
+            border-top: 4px solid #ec4899; /* Strong pink for spinner */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body class="bg-[#FFF0F5] min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8">
-    <div class="w-full max-w-6xl mx-auto bg-white/70 backdrop-blur-sm rounded-3xl shadow-2xl p-6 sm:p-8 md:p-12 border border-pink-200">
-        <!-- Header Title -->
-        <header class="text-center mb-8">
-            <h1 class="handwriting-font text-5xl sm:text-6xl md:text-7xl font-bold text-pink-500" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
-                Thời khóa biểu của Chíp
-            </h1>
-        </header>
+<body class="min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-hidden">
 
-        <!-- Timetable Image -->
-        <main>
-            <div class="overflow-hidden rounded-2xl shadow-lg border-2 border-white">
-                 <!-- The user's uploaded image will be displayed here -->
-                <img src="https://raw.githubusercontent.com/zero01001101/chip0123589/refs/heads/main/131025-191025.png" alt="Hình ảnh thời khóa biểu" class="w-full h-auto object-cover">
-            </div>
-        </main>
+    <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#FFF0F5] transition-opacity duration-500 ease-in-out">
+        <h1 class="handwriting-font text-8xl font-bold text-pink-500 mb-6">Zero</h1>
+        <div class="loader"></div>
     </div>
+
+    <div id="app-container" class="w-full max-w-6xl mx-auto hidden">
+        <div class="bg-white/70 backdrop-blur-sm rounded-3xl shadow-2xl p-6 sm:p-8 md:p-12 border border-pink-200">
+            <header class="text-center mb-8">
+                <h1 class="handwriting-font text-5xl sm:text-6xl md:text-7xl font-bold text-pink-500" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+                    Thời khóa biểu của Chíp
+                </h1>
+                <p id="week-title" class="text-pink-400 font-semibold text-lg mt-2 transition-opacity duration-300"></p>
+                
+                <div class="mt-4 flex justify-center items-center gap-4">
+                    <button id="prev-btn" class="animated-btn px-6 py-2 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
+                        Tuần trước
+                    </button>
+                    <button id="next-btn" class="animated-btn px-6 py-2 flex items-center gap-2">
+                        Tuần sau
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                </div>
+            </header>
+
+            <main>
+                <div class="overflow-hidden rounded-2xl shadow-lg border-2 border-white">
+                    <img id="timetable-img" src="" alt="Hình ảnh thời khóa biểu" class="w-full h-auto object-cover transition-opacity duration-300 ease-in-out">
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="welcome-popup-backdrop" class="fixed inset-0 bg-black bg-opacity-40 items-center justify-center z-[70] popup-hidden" style="backdrop-filter: blur(0px); transition: all 0.3s ease;">
+        <div id="welcome-popup" class="bg-pink-50 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center transform opacity-0 scale-95 transition-all duration-300">
+            <h2 class="text-3xl font-bold text-pink-600 mb-6">Học chăm chỉ nhé!</h2>
+            <button id="close-popup-btn" class="animated-btn px-8 py-3 text-lg">Dạ!</button>
+        </div>
+    </div>
+
+    <canvas id="particleCanvas"></canvas>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- DATA ---
+            const images = [
+                { src: "https://raw.githubusercontent.com/zero01001101/chip0123589/refs/heads/main/tkb06102025.png", title: "(06/10 - 12/10)", startDate: '2025-10-06', endDate: '2025-10-12' },
+                { src: "https://raw.githubusercontent.com/zero01001101/chip0123589/refs/heads/main/131025-191025.png", title: "(13/10 - 19/10)", startDate: '2025-10-13', endDate: '2025-10-19' },
+                { src: "https://raw.githubusercontent.com/zero01001101/chip0123589/refs/heads/main/201025-261025.png", title: "(20/10 - 26/10)", startDate: '2025-10-20', endDate: '2025-10-26' },
+                { src: "https://raw.githubusercontent.com/zero01001101/chip0123589/refs/heads/main/271025-021125.png", title: "(27/10 - 02/11)", startDate: '2025-10-27', endDate: '2025-11-02' },
+                { src: "https://raw.githubusercontent.com/zero01001101/chip0123589/refs/heads/main/031125-091125.png", title: "(03/11 - 09/11)", startDate: '2025-11-03', endDate: '2025-11-09' },
+                { src: "https://raw.githubusercontent.com/zero01001101/chip0123589/refs/heads/main/101125-161125.png", title: "(10/11 - 16/11)", startDate: '2025-11-10', endDate: '2025-11-16' },
+                { src: "https://raw.githubusercontent.com/zero01001101/chip0123589/refs/heads/main/171125-231125.png", title: "(17/11 - 23/11)", startDate: '2025-11-17', endDate: '2025-11-23' },
+            ];
+
+            // --- FUNCTION to get current week's index ---
+            function getCurrentWeekIndex() {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Normalize to the beginning of the day for accurate comparison
+
+                for (let i = 0; i < images.length; i++) {
+                    const startDate = new Date(images[i].startDate);
+                    const endDate = new Date(images[i].endDate);
+                    // Set the end date's time to the very end of the day to include it in the range
+                    endDate.setHours(23, 59, 59, 999); 
+                    
+                    if (today >= startDate && today <= endDate) {
+                        return i; // Return the index of the current week
+                    }
+                }
+                return 0; // Default to the first week if no match is found
+            }
+
+            let currentIndex = getCurrentWeekIndex(); // Automatically determine the current week
+
+            // --- ELEMENT SELECTION ---
+            const splashScreen = document.getElementById('splash-screen');
+            const appContainer = document.getElementById('app-container');
+            const welcomePopupBackdrop = document.getElementById('welcome-popup-backdrop');
+            const closePopupButton = document.getElementById('close-popup-btn');
+            const timetableImg = document.getElementById('timetable-img');
+            const weekTitle = document.getElementById('week-title');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            // --- POPUP MANAGEMENT ---
+            const showPopup = (backdrop) => {
+                const popup = backdrop.firstElementChild;
+                appContainer.classList.add('blurred');
+                backdrop.style.setProperty('backdrop-filter', 'blur(5px)');
+                backdrop.classList.remove('popup-hidden');
+                backdrop.classList.add('popup-visible');
+                setTimeout(() => { 
+                    popup.style.opacity = '1'; 
+                    popup.style.transform = 'scale(1)'; 
+                    if (backdrop === welcomePopupBackdrop) {
+                        const r = popup.getBoundingClientRect();
+                        createHeartExplosion(r.left + r.width / 2, r.top + r.height / 2);
+                    }
+                }, 50);
+            };
+
+            const closePopup = (backdrop) => {
+                if (!backdrop) return;
+                const popup = backdrop.firstElementChild;
+                appContainer.classList.remove('blurred');
+                backdrop.style.setProperty('backdrop-filter', 'blur(0px)');
+                popup.style.opacity = '0';
+                popup.style.transform = 'scale(0.95)';
+                setTimeout(() => { 
+                    backdrop.classList.remove('popup-visible'); 
+                    backdrop.classList.add('popup-hidden'); 
+                    document.body.classList.remove('overflow-hidden');
+                }, 300);
+            };
+            
+            // --- IMAGE SLIDER LOGIC ---
+            function updateImage(newIndex) {
+                timetableImg.style.opacity = '0';
+                weekTitle.style.opacity = '0';
+                setTimeout(() => {
+                    currentIndex = newIndex;
+                    timetableImg.src = images[currentIndex].src;
+                    weekTitle.textContent = images[currentIndex].title;
+                    timetableImg.style.opacity = '1';
+                    weekTitle.style.opacity = '1';
+                }, 150);
+            }
+
+            // --- PARTICLE & ANIMATION SYSTEM ---
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let running = false;
+            function resizeCanvas() { canvas.width = innerWidth; canvas.height = innerHeight; }
+            addEventListener('resize', resizeCanvas); resizeCanvas();
+
+            function pickHeartColor() { 
+                const hue = 330 + Math.random() * 40;
+                return `hsl(${(hue % 360).toFixed(0)} 90% ${65 + Math.random() * 15}%)`;
+            }
+
+            function drawHeart(ctx, x, y, size, color, rotation) {
+                ctx.save();
+                ctx.translate(x, y); ctx.rotate(rotation); ctx.scale(size / 20, size / 20);
+                ctx.beginPath(); ctx.moveTo(0, 6);
+                ctx.bezierCurveTo(0, 2, -4, -2, -8, -2);
+                ctx.bezierCurveTo(-15, -2, -16, 8, -16, 9);
+                ctx.bezierCurveTo(-16, 18, 0, 28, 0, 34); ctx.bezierCurveTo(0, 28, 16, 18, 16, 9);
+                ctx.bezierCurveTo(16, 8, 15, -2, 8, -2); ctx.bezierCurveTo(4, -2, 0, 2, 0, 6);
+                ctx.closePath(); ctx.fillStyle = color; ctx.fill(); ctx.restore();
+            }
+            
+            function update() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles = particles.filter(p => {
+                    p.x += p.vx; p.y += p.vy; p.vy += p.gravity;
+                    p.vx *= 0.98; p.vy *= 0.98; p.size *= 0.985; p.alpha -= p.fade;
+                    p.rotation += p.spin; return p.alpha > 0 && p.size > 0.5;
+                });
+                particles.forEach(p => { 
+                    ctx.globalAlpha = Math.max(0, p.alpha); 
+                    drawHeart(ctx, p.x, p.y, p.size, p.color, p.rotation); 
+                });
+                ctx.globalAlpha = 1; 
+                if (particles.length) requestAnimationFrame(update); else running = false;
+            }
+
+            function startLoop() { if (!running) { running = true; requestAnimationFrame(update); } }
+            
+            function createExplosion(x, y, w, h) {
+                const count = Math.min(40, Math.max(20, Math.floor((w * h) / 100)));
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2.0 + Math.random() * 4.5;
+                    particles.push({
+                        x: x + (Math.random() - 0.5) * w * 0.7, y: y + (Math.random() - 0.5) * h * 0.7,
+                        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, size: 8 + Math.random() * 10, alpha: 1, color: pickHeartColor(),
+                        rotation: Math.random() * Math.PI * 2, spin: (Math.random() - 0.5) * 0.1, gravity: 0.08 + Math.random() * 0.08, fade: 0.02 + Math.random() * 0.015,
+                    });
+                }
+                startLoop();
+            }
+
+            function createHeartExplosion(centerX, centerY) {
+                const numParticles = 200;
+                const heartScale = Math.min(innerWidth, innerHeight) * 0.4;
+                for (let i = 0; i < numParticles; i++) {
+                    const t = Math.random() * 2 * Math.PI;
+                    const x = heartScale * 16 * Math.pow(Math.sin(t), 3);
+                    const y = -heartScale * (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+                    const angle = Math.atan2(y, x);
+                    const speed = 1.5 + Math.random() * 3.5;
+                    
+                    particles.push({
+                        x: centerX, y: centerY,
+                        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+                        size: 8 + Math.random() * 10, alpha: 1, color: pickHeartColor(),
+                        rotation: Math.random() * Math.PI * 2, spin: (Math.random() - 0.5) * 0.1,
+                        gravity: 0.03 + Math.random() * 0.03, fade: 0.015 + Math.random() * 0.01
+                    });
+                }
+                startLoop();
+            }
+
+            async function playButtonAnimation(buttonElement) {
+                if (buttonElement.dataset.busy === '1') return;
+                buttonElement.dataset.busy = '1';
+                await buttonElement.animate(
+                    [{ transform: 'scale(1)' }, { transform: 'scale(.92)' }],
+                    { duration: 120, easing: 'cubic-bezier(.3,.7,.4,1)' }
+                ).finished;
+                await buttonElement.animate(
+                    [{ transform: 'scale(.92)' }, { transform: 'scale(1.1)' }, { transform: 'scale(1)' }],
+                    { duration: 130, easing: 'cubic-bezier(.2,1.2,.2,1)' }
+                ).finished;
+                const r = buttonElement.getBoundingClientRect();
+                createExplosion(r.left + r.width / 2, r.top + r.height / 2, r.width, r.height);
+                buttonElement.dataset.busy = '0';
+            }
+
+            // --- INITIALIZATION & EVENT LISTENERS ---
+            // 1. Handle Splash Screen
+            setTimeout(() => {
+                splashScreen.style.opacity = '0';
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    appContainer.classList.remove('hidden'); // Show main content
+                    
+                    // 2. Set initial image based on current date
+                    updateImage(currentIndex);
+
+                    // 3. Show welcome popup
+                    setTimeout(() => {
+                        showPopup(welcomePopupBackdrop);
+                    }, 300);
+
+                }, 500);
+            }, 1500);
+
+            // Button click events
+            closePopupButton.addEventListener('click', async (e) => {
+                await playButtonAnimation(e.currentTarget);
+                setTimeout(() => closePopup(welcomePopupBackdrop), 150);
+            });
+            
+            nextBtn.addEventListener('click', async function() {
+                await playButtonAnimation(this);
+                const newIndex = (currentIndex + 1) % images.length;
+                updateImage(newIndex);
+            });
+            
+            prevBtn.addEventListener('click', async function() {
+                await playButtonAnimation(this);
+                const newIndex = (currentIndex - 1 + images.length) % images.length;
+                updateImage(newIndex);
+            });
+        });
+    </script>
 </body>
 </html>
