@@ -1342,32 +1342,61 @@
         `;
         document.head.appendChild(style);
 
-        // --- UTILITY FUNCTIONS ---
+                // --- UTILITY FUNCTIONS ---
         let voices = [];
-        function populateVoiceList() { voices = speechSynthesis.getVoices(); }
+        let isSpeechReady = false;
+
+        function populateVoiceList() {
+            voices = speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                isSpeechReady = true;
+                console.log("Voices loaded successfully.");
+            }
+        }
+
         populateVoiceList();
-        if (speechSynthesis.onvoiceschanged !== undefined) { speechSynthesis.onvoiceschanged = populateVoiceList; }
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = populateVoiceList;
+        }
+
+        // Function to unlock speech synthesis on mobile
+        function unlockSpeech() {
+            if (!isSpeechReady) {
+                const utterance = new SpeechSynthesisUtterance('');
+                speechSynthesis.speak(utterance);
+                speechSynthesis.cancel();
+                populateVoiceList();
+            }
+        }
+        // Add event listener to a main button to unlock speech
+        document.getElementById('close-popup-btn').addEventListener('click', unlockSpeech, { once: true });
+
 
         function speak(text, rate = 1) {
+            if (!isSpeechReady) {
+                console.warn("Speech synthesis is not ready yet.");
+                // Attempt to re-populate voices
+                populateVoiceList();
+                if (voices.length === 0) {
+                    alert("Giọng đọc chưa sẵn sàng. Vui lòng thử lại sau giây lát.");
+                    return;
+                }
+            }
             if (speechSynthesis.speaking) {
                 speechSynthesis.cancel();
             }
             const utterance = new SpeechSynthesisUtterance(text);
-            
-            // Tìm giọng nữ 'en-US' một cách nghiêm ngặt
             const femaleVoice = voices.find(v =>
                 v.lang === 'en-US' &&
                 (v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Google US English'))
             );
-
             if (femaleVoice) {
                 utterance.voice = femaleVoice;
-                utterance.rate = rate; // Đặt tốc độ đọc
-                speechSynthesis.speak(utterance);
             } else {
                 console.warn("Không tìm thấy giọng đọc nữ 'en-US' phù hợp.");
-                // alert("Không tìm thấy giọng đọc nữ tiếng Anh phù hợp trên thiết bị của bạn.");
             }
+            utterance.rate = rate;
+            speechSynthesis.speak(utterance);
         }
 
         const canvas = document.getElementById('particleCanvas');
