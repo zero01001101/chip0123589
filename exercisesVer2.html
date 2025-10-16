@@ -1344,58 +1344,74 @@
 
         // --- UTILITY FUNCTIONS ---
         let voices = [];
-        // Biến để kiểm tra xem API giọng nói đã sẵn sàng chưa
-        let isSpeechApiReady = false;
+        let voicesPromise = null;
 
-        // Hàm lấy danh sách giọng nói từ trình duyệt
-        function populateVoiceList() {
-            voices = speechSynthesis.getVoices();
-            if (voices.length > 0) {
-                isSpeechApiReady = true;
-                console.log("Speech API voices loaded successfully.");
-            } else {
-                console.warn("Speech API voices not ready yet.");
-            }
+        // Hàm tải giọng nói mạnh mẽ hơn, hoạt động tốt trên Safari
+        function loadVoices() {
+            if (voicesPromise) return voicesPromise;
+
+            voicesPromise = new Promise((resolve, reject) => {
+                const getAndResolve = () => {
+                    const voiceList = speechSynthesis.getVoices();
+                    if (voiceList.length > 0) {
+                        voices = voiceList;
+                        console.log("Voices successfully loaded.");
+                        resolve(voices);
+                        return true;
+                    }
+                    return false;
+                };
+
+                if (getAndResolve()) return;
+
+                speechSynthesis.onvoiceschanged = getAndResolve;
+
+                // Fallback: Safari đôi khi không kích hoạt onvoiceschanged
+                let pollInterval = setInterval(() => {
+                    if (getAndResolve()) {
+                        clearInterval(pollInterval);
+                    }
+                }, 150);
+
+                setTimeout(() => {
+                    clearInterval(pollInterval);
+                    if (voices.length === 0) {
+                        console.error("Failed to load voices after timeout.");
+                        reject("Không thể tải giọng đọc sau 5 giây.");
+                    }
+                }, 5000);
+            });
+            return voicesPromise;
+        }
+        
+        // Hàm kích hoạt API giọng nói, rất QUAN TRỌNG cho Safari
+        function initSpeechSynthesis() {
+            // Phải được gọi bên trong một sự kiện do người dùng bấm (click, touch)
+            const utterance = new SpeechSynthesisUtterance("");
+            utterance.volume = 0; // Nói nhưng không phát ra tiếng
+            speechSynthesis.speak(utterance);
+            speechSynthesis.cancel();
+            console.log("Speech synthesis unlocked by user gesture.");
+            // Bắt đầu tải danh sách giọng nói ngay sau khi được kích hoạt
+            loadVoices();
         }
 
-        populateVoiceList();
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = populateVoiceList;
-        }
-
-        // Hàm "mở khóa" âm thanh cho trình duyệt di động
-        // Nó sẽ được gọi khi người dùng bấm nút "Bắt đầu"
-        function unlockSpeechAudio() {
-            // Nếu API chưa sẵn sàng, thử kích hoạt nó bằng một lệnh nói trống
-            if (!isSpeechApiReady && speechSynthesis) {
-                console.log("Attempting to unlock speech synthesis...");
-                const utterance = new SpeechSynthesisUtterance("");
-                speechSynthesis.speak(utterance);
-                speechSynthesis.cancel();
-                // Thử lấy lại danh sách giọng nói sau khi kích hoạt
-                setTimeout(populateVoiceList, 50);
-            }
-        }
-
-        // Hàm đọc văn bản đã được sửa lỗi
-        function speak(text, rate = 1) {
-            // Kiểm tra lại nếu giọng nói chưa được tải
-            if (voices.length === 0) {
-                 populateVoiceList();
-            }
-
-            if (!isSpeechApiReady) {
-                alert("Tính năng đọc chưa sẵn sàng. Vui lòng thử bấm lại sau giây lát.");
+        // Hàm đọc văn bản (đã nâng cấp thành async để chờ giọng đọc)
+        async function speak(text, rate = 1) {
+            try {
+                // Chờ cho đến khi danh sách giọng nói được tải thành công
+                await loadVoices();
+            } catch (error) {
+                alert("Không thể tải giọng đọc. Vui lòng tải lại trang và thử lại.");
+                console.error(error);
                 return;
             }
 
-            // Dừng mọi lần đọc trước đó
             if (speechSynthesis.speaking) {
                 speechSynthesis.cancel();
             }
 
             const utterance = new SpeechSynthesisUtterance(text);
-            // Tìm giọng đọc nữ tiếng Anh (US) phù hợp
             const femaleVoice = voices.find(v =>
                 v.lang === 'en-US' &&
                 (v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Google US English'))
@@ -1407,7 +1423,7 @@
                 console.warn("Không tìm thấy giọng đọc nữ 'en-US' phù hợp. Sử dụng giọng mặc định.");
             }
 
-            utterance.rate = rate; // Đặt tốc độ đọc
+            utterance.rate = rate;
             speechSynthesis.speak(utterance);
         }
 
@@ -1580,7 +1596,7 @@
                 const optionPool = allWords.filter(w => w.en !== correctWord.en);
                 while (wrongAnswers.size < 3 && optionPool.length > 0) {
                     const randomWordIndex = Math.floor(Math.random() * optionPool.length);
-                    const randomWord = optionPool.splice(randomWordIndex, 1)[0]; // Remove to avoid duplicates
+                    const randomWord = optionPool.splice(randomWordIndex, 1)[0];
                     const wrongOption = isEnToVi ? randomWord.vi : randomWord.en;
                     if (wrongOption !== correctAnswer) {
                         wrongAnswers.add(wrongOption);
@@ -1681,13 +1697,15 @@
                 }, 500);
             }, 1500);
 
-            // SỰ THAY ĐỔI QUAN TRỌNG: Gắn hàm unlockSpeech vào nút bấm đầu tiên
+            // SỬA LỖI QUAN TRỌNG CHO SAFARI
             closePopupButton.addEventListener('click', async (e) => {
-                unlockSpeechAudio(); // Mở khóa âm thanh khi người dùng bấm "Bắt đầu"
+                // Kích hoạt API giọng nói ngay khi người dùng bấm nút đầu tiên
+                initSpeechSynthesis(); 
+                
                 await playButtonAnimation(e.currentTarget);
                 setTimeout(() => closePopup(welcomePopupBackdrop), 150);
                 document.body.classList.remove('overflow-hidden');
-            });
+            }, { once: true }); // Thêm { once: true } để đảm bảo chỉ chạy 1 lần
 
             showVocabBtn.addEventListener('click', async (e) => {
                 await playButtonAnimation(e.currentTarget);
@@ -1727,8 +1745,17 @@
                 closePopup(topicPopupBackdrop);
                 setTimeout(() => showPopup(vocabularyPopupBackdrop), 350);
             });
-            speakSlowBtn.addEventListener('click', (e) => playButtonAnimation(e.currentTarget).then(() => speak(currentWordToSpeak, 0.5)));
-            speakFastBtn.addEventListener('click', (e) => playButtonAnimation(e.currentTarget).then(() => speak(currentWordToSpeak, 1.2)));
+            
+            // Các nút đọc giờ đây sẽ chờ giọng đọc được tải xong
+            speakSlowBtn.addEventListener('click', (e) => {
+                playButtonAnimation(e.currentTarget);
+                speak(currentWordToSpeak, 0.5);
+            });
+            speakFastBtn.addEventListener('click', (e) => {
+                playButtonAnimation(e.currentTarget);
+                speak(currentWordToSpeak, 1.2);
+            });
+
 
             showTestBtn.addEventListener('click', (e) => playButtonAnimation(e.currentTarget).then(startTest));
             submitTestBtn.addEventListener('click', handleSubmit);
