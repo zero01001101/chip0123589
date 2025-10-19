@@ -7,31 +7,46 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Pacifico&display=swap" rel="stylesheet">
     <style>
         /* CSS tùy chỉnh cho hiệu ứng và font chữ */
         body, html {
             font-family: 'Inter', sans-serif;
             width: 100%;
-            min-height: 100%; 
-            overflow-x: hidden; 
+            min-height: 100%;
+            overflow-x: hidden;
         }
-        
+
         body {
-            overflow-y: auto; 
-            background-color: transparent; 
+            overflow-y: auto;
+            background-color: transparent;
+        }
+
+        /* === MỚI: HIỆU ỨNG NỀN CHUYỂN ĐỘNG === */
+        html {
+            background-size: 200% 200%;
+            animation: gradient-flow 15s ease infinite;
+        }
+
+        @keyframes gradient-flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .font-pacifico {
             font-family: 'Pacifico', cursive;
         }
-        
+
+        /* === MỚI: CẬP NHẬT HIỆU ỨNG XUẤT HIỆN === */
         #main-content {
-            transition: opacity 0.7s ease-in-out, filter 0.3s ease-in-out;
+            transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out;
+            transform: translateY(20px); /* Trượt nhẹ từ dưới lên */
         }
 
         .is-blurred {
             filter: blur(5px);
-            pointer-events: none; 
+            pointer-events: none;
         }
 
         @keyframes float {
@@ -44,8 +59,10 @@
             animation: float 6s ease-in-out infinite;
         }
 
+        /* === CẬP NHẬT: TĂNG ĐỘ SÂU BÓNG ĐỔ === */
         .svg-heart {
-            filter: drop-shadow(0 15px 15px rgba(236, 72, 153, 0.4));
+            filter: drop-shadow(0 25px 25px rgba(236, 72, 153, 0.45));
+            transition: transform 0.3s ease-out; /* Thêm transition cho hiệu ứng 3D */
         }
 
         .modal {
@@ -84,42 +101,32 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background-color: rgba(236, 72, 153, 0); 
-            border-radius: 10px;
-            transition: background-color 0.3s ease-out; 
-        }
-        
-        .scrolling::-webkit-scrollbar-thumb {
-            background-color: rgba(236, 72, 153, 0.6); 
-        }
 
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(236, 72, 153, 0);
+            border-radius: 10px;
+            transition: background-color 0.3s ease-out;
+        }
+        .scrolling::-webkit-scrollbar-thumb { background-color: rgba(236, 72, 153, 0.6); }
         html {
             scrollbar-width: thin;
             scrollbar-color: rgba(236, 72, 153, 0.6) transparent;
         }
     </style>
 </head>
-<body>
+<body class="text-gray-800">
 
-    <!-- === MÀN HÌNH LOADING === -->
     <div id="loading-screen" class="fixed inset-0 bg-gradient-to-br from-rose-100 to-pink-200 flex flex-col items-center justify-center z-[100] transition-opacity duration-500 ease-in-out">
         <h1 class="font-pacifico text-7xl sm:text-8xl text-pink-600 mb-8 drop-shadow-lg">Zero</h1>
         <div class="loader"></div>
     </div>
 
-    <!-- === NỘI DUNG CHÍNH === -->
     <main id="main-content" class="w-full max-w-4xl mx-auto text-center hidden opacity-0 p-4 sm:p-6">
-        
+
         <div class="h-auto flex justify-center items-center my-4 heart-animation">
-             <svg class="w-60 h-60 sm:w-80 sm:h-80 svg-heart" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+             <svg class="w-60 h-60 sm:w-80 sm:h-80 svg-heart tilt-element" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" style="stop-color:#f472b6;stop-opacity:1" />
@@ -130,33 +137,34 @@
             </svg>
         </div>
 
-        <h1 class="font-pacifico text-5xl md:text-6xl text-pink-600 mb-8 drop-shadow-lg">
+        <h1 class="font-pacifico text-5xl md:text-6xl text-pink-600 mb-8 [filter:drop-shadow(0_4px_4px_rgba(236,72,153,0.3))]">
             Chíp học English
         </h1>
 
         <div class="space-y-6 pb-8">
-            <div class="flex flex-wrap items-center justify-center gap-4">
-                <a href="#" target="_blank" rel="noopener noreferrer" 
-                   class="group transition-transform transform hover:scale-105 heart-button">
-                    <svg viewBox="0 0 24 24" class="w-36 h-36 sm:w-40 sm:h-40 drop-shadow-xl group-hover:drop-shadow-2xl transition-all duration-300">
+             <div class="flex flex-wrap items-center justify-center gap-4">
+
+                <a href="#" target="_blank" rel="noopener noreferrer"
+                   class="group transition-transform transform hover:scale-110 hover:-translate-y-2 duration-300 heart-button tilt-element">
+                    <svg viewBox="0 0 24 24" class="w-36 h-36 sm:w-40 sm:h-40 drop-shadow-[0_10px_10px_rgba(236,72,153,0.3)] group-hover:drop-shadow-[0_15px_15px_rgba(236,72,153,0.5)] transition-all duration-300">
                         <path class="fill-pink-500 group-hover:fill-pink-600 transition-colors" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                        <text x="12" y="13" text-anchor="middle" dominant-baseline="middle" font-size="2.8" font-family="Pacifico" class="fill-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">Vocabulary</text>
+                        <text x="12" y="13" text-anchor="middle" dominant-baseline="middle" font-size="2.8" font-family="Pacifico" class="fill-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.25);">Vocabulary</text>
                     </svg>
                 </a>
-                
-                <a href="main.html" target="_blank" rel="noopener noreferrer" 
-                   class="group transition-transform transform hover:scale-105 heart-button">
-                    <svg viewBox="0 0 24 24" class="w-36 h-36 sm:w-40 sm:h-40 drop-shadow-xl group-hover:drop-shadow-2xl transition-all duration-300">
+
+                <a href="main.html" target="_blank" rel="noopener noreferrer"
+                   class="group transition-transform transform hover:scale-110 hover:-translate-y-2 duration-300 heart-button tilt-element">
+                    <svg viewBox="0 0 24 24" class="w-36 h-36 sm:w-40 sm:h-40 drop-shadow-[0_10px_10px_rgba(236,72,153,0.3)] group-hover:drop-shadow-[0_15px_15px_rgba(236,72,153,0.5)] transition-all duration-300">
                         <path class="fill-pink-500 group-hover:fill-pink-600 transition-colors" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                        <text x="12" y="13" text-anchor="middle" dominant-baseline="middle" font-size="3.2" font-family="Pacifico" class="fill-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">Exercises</text>
+                        <text x="12" y="13" text-anchor="middle" dominant-baseline="middle" font-size="3.2" font-family="Pacifico" class="fill-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.25);">Exercises</text>
                     </svg>
                 </a>
 
                 <a href="timetableChip.html" target="_blank" rel="noopener noreferrer"
-                   class="group transition-transform transform hover:scale-105 heart-button">
-                    <svg viewBox="0 0 24 24" class="w-36 h-36 sm:w-40 sm:h-40 drop-shadow-xl group-hover:drop-shadow-2xl transition-all duration-300">
+                   class="group transition-transform transform hover:scale-110 hover:-translate-y-2 duration-300 heart-button tilt-element">
+                    <svg viewBox="0 0 24 24" class="w-36 h-36 sm:w-40 sm:h-40 drop-shadow-[0_10px_10px_rgba(236,72,153,0.3)] group-hover:drop-shadow-[0_15px_15px_rgba(236,72,153,0.5)] transition-all duration-300">
                         <path class="fill-pink-500 group-hover:fill-pink-600 transition-colors" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                         <text x="12" y="13" text-anchor="middle" dominant-baseline="central" font-size="2.5" font-family="Pacifico" class="fill-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">
+                         <text x="12" y="13" text-anchor="middle" dominant-baseline="central" font-size="2.5" font-family="Pacifico" class="fill-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.25);">
                             <tspan x="12" dy="-0.6em">Thời khóa</tspan>
                             <tspan x="12" dy="1.2em">biểu</tspan>
                          </text>
@@ -164,21 +172,21 @@
                 </a>
 
                 <a href="exercisesVer2.html" target="_blank" rel="noopener noreferrer"
-                   class="group transition-transform transform hover:scale-105 heart-button">
-                    <svg viewBox="0 0 24 24" class="w-36 h-36 sm:w-40 sm:h-40 drop-shadow-xl group-hover:drop-shadow-2xl transition-all duration-300">
+                   class="group transition-transform transform hover:scale-110 hover:-translate-y-2 duration-300 heart-button tilt-element">
+                    <svg viewBox="0 0 24 24" class="w-36 h-36 sm:w-40 sm:h-40 drop-shadow-[0_10px_10px_rgba(236,72,153,0.3)] group-hover:drop-shadow-[0_15px_15px_rgba(236,72,153,0.5)] transition-all duration-300">
                         <path class="fill-pink-500 group-hover:fill-pink-600 transition-colors" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                         <text x="12" y="13" text-anchor="middle" dominant-baseline="central" font-size="2.5" font-family="Pacifico" class="fill-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">
+                         <text x="12" y="13" text-anchor="middle" dominant-baseline="central" font-size="2.5" font-family="Pacifico" class="fill-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.25);">
                             <tspan x="12" dy="-0.6em">Phiên bản</tspan>
                             <tspan x="12" dy="1.2em">mới</tspan>
                          </text>
                     </svg>
                 </a>
-                
-                <a href="randomSpin.html" target="_blank" rel="noopener noreferrer" 
-                   class="group transition-transform transform hover:scale-105 heart-button">
-                    <svg viewBox="0 0 24 24" class="w-36 h-36 sm:w-40 sm:h-40 drop-shadow-xl group-hover:drop-shadow-2xl transition-all duration-300">
+
+                <a href="randomSpin.html" target="_blank" rel="noopener noreferrer"
+                   class="group transition-transform transform hover:scale-110 hover:-translate-y-2 duration-300 heart-button tilt-element">
+                    <svg viewBox="0 0 24 24" class="w-36 h-36 sm:w-40 sm:h-40 drop-shadow-[0_10px_10px_rgba(236,72,153,0.3)] group-hover:drop-shadow-[0_15px_15px_rgba(236,72,153,0.5)] transition-all duration-300">
                         <path class="fill-pink-500 group-hover:fill-pink-600 transition-colors" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                        <text x="12" y="13" text-anchor="middle" dominant-baseline="middle" font-size="3.2" font-family="Pacifico" class="fill-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">Vòng quay</text>
+                        <text x="12" y="13" text-anchor="middle" dominant-baseline="middle" font-size="3.2" font-family="Pacifico" class="fill-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.25);">Vòng quay</text>
                     </svg>
                 </a>
             </div>
@@ -186,7 +194,6 @@
             <div class="pt-8">
                  <p class="font-pacifico text-2xl text-pink-600 drop-shadow-md">Tiktok: @</p>
             </div>
-
         </div>
     </main>
 
@@ -201,12 +208,12 @@
             </button>
         </div>
     </div>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const loadingScreen = document.getElementById('loading-screen');
             const mainContent = document.getElementById('main-content');
-            
+
             document.body.style.overflowY = 'hidden';
 
             setTimeout(() => {
@@ -214,21 +221,24 @@
                     loadingScreen.style.opacity = '0';
                     loadingScreen.addEventListener('transitionend', () => {
                         loadingScreen.style.display = 'none';
-                        document.body.style.overflowY = 'auto'; 
+                        document.body.style.overflowY = 'auto';
 
                         if (mainContent) {
                             mainContent.classList.remove('hidden');
-                            setTimeout(() => mainContent.style.opacity = '1', 50); 
+                             // === CẬP NHẬT: HIỆU ỨNG XUẤT HIỆN TRƯỢT LÊN ===
+                            setTimeout(() => {
+                                mainContent.style.opacity = '1';
+                                mainContent.style.transform = 'translateY(0)';
+                            }, 50);
                         }
 
                         const welcomeModal = document.getElementById('welcome-modal');
                         if (welcomeModal) {
-                            setTimeout(() => {
+                           setTimeout(() => {
                                 welcomeModal.classList.add('is-visible');
                                 mainContent.classList.add('is-blurred');
-                            }, 300);
+                           }, 300);
                         }
-
                     }, { once: true });
                 }
             }, 3000);
@@ -239,15 +249,14 @@
             const hideWelcomeModal = () => {
                 const welcomeModal = document.getElementById('welcome-modal');
                 if (!welcomeModal) return;
-                mainContent.classList.remove('is-blurred'); 
-                welcomeModal.classList.remove('is-visible'); 
+                mainContent.classList.remove('is-blurred');
+                welcomeModal.classList.remove('is-visible');
             };
-            
+
             if (okWelcomeBtn) {
                 okWelcomeBtn.addEventListener('click', hideWelcomeModal);
             }
 
-            // --- CẬP NHẬT LOGIC DELAY CHO BUTTON ---
             const createHeartExplosion = (event) => {
                 const button = event.currentTarget;
                 const rect = button.getBoundingClientRect();
@@ -273,29 +282,43 @@
                     });
                 }
             };
-            
+
             heartButtons.forEach(button => {
                 button.addEventListener('click', (event) => {
-                    // Ngăn chặn hành vi mặc định của thẻ <a>
                     event.preventDefault();
-
-                    // Chạy hiệu ứng nổ
                     createHeartExplosion(event);
-                    
-                    // Lấy link đích và target từ thẻ <a>
                     const destination = button.href;
                     const target = button.target;
-
-                    // Sau 1 giây, mới thực hiện chuyển trang
                     setTimeout(() => {
                         if (target === '_blank' && destination) {
                             window.open(destination, '_blank');
                         } else if (destination) {
                             window.location.href = destination;
                         }
-                    }, 600); // 600ms = 0.6 giây
+                    }, 600);
                 });
             });
+
+            // === MỚI: HIỆU ỨNG 3D TILT KHI DI CHUỘT ===
+            const tiltElements = document.querySelectorAll('.tilt-element');
+            tiltElements.forEach(el => {
+                const height = el.clientHeight;
+                const width = el.clientWidth;
+
+                el.addEventListener('mousemove', (e) => {
+                    const xVal = e.layerX;
+                    const yVal = e.layerY;
+                    const yRotation = 20 * ((xVal - width / 2) / width);
+                    const xRotation = -20 * ((yVal - height / 2) / height);
+                    const string = `perspective(500px) scale(1.05) rotateX(${xRotation}deg) rotateY(${yRotation}deg)`;
+                    el.style.transform = string;
+                });
+
+                el.addEventListener('mouseout', () => {
+                    el.style.transform = 'perspective(500px) scale(1) rotateX(0) rotateY(0)';
+                });
+            });
+
 
             let scrollTimeout;
             window.addEventListener('scroll', () => {
